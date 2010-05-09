@@ -29,8 +29,12 @@ public class Worm {
 	 * @return
 	 */
 	CollisionType collisionTest(Line line) {
-		// implement
+		// TODO: implement
 		
 		return CollisionType.NOCOLLISION;
+	}
+	
+	public void move(int timestep) {
+		// TODO: implement
 	}
 }
