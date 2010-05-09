@@ -3,7 +3,9 @@ package org.wololo;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 
 public class Worm {
 
@@ -11,16 +13,20 @@ public class Worm {
 	
 	boolean alive = true;
 	int score = 0;
-	Color color;
+	int color = Color.WHITE;
 	
-	double velocity;
-	double torque = 0;
-	double direction;
+	float velocity;
+	float torque = 0;
+	float direction;
+	Point lastPosition;
+	Point position;
 	
 	List<Wormsegment> segments = new ArrayList<Wormsegment>();
 	
-	public Worm() {
-	
+	public Worm(Point position, float direction, int color) {
+		this.position = position;
+		this.direction = direction;
+		this.color = color;
 	}
 	
 	/**
@@ -35,6 +41,27 @@ public class Worm {
 	}
 	
 	public void move(int timestep) {
-		// TODO: implement
+		lastPosition = position;
+		
+		position.move(0.01f, 0.01f);
+		
+		segments.add(new Wormsegment(lastPosition, position, false));
+	}
+	
+	public void draw(Canvas canvas) {
+		for (Wormsegment wormsegment: segments) {
+			Paint paint = new Paint();
+			paint.setColor(color);
+			paint.setStrokeWidth(1.0f);
+			
+			int width = canvas.getWidth();
+			int height = canvas.getHeight();
+			float startX = width * wormsegment.getStart().getX();
+			float startY = height * wormsegment.getStart().getY();
+			float stopX = width * wormsegment.getStop().getX();
+			float stopY = height * wormsegment.getStop().getY();
+			
+			canvas.drawLine(startX, startY, stopX, stopY, paint);
+		}
 	}
 }
