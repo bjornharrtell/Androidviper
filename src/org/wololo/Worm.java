@@ -41,11 +41,11 @@ public class Worm {
 	}
 	
 	public void move(int timestep) {
-		lastPosition = position;
+		lastPosition = position.clone();
 		
 		position.move(0.01f, 0.01f);
 		
-		segments.add(new Wormsegment(lastPosition, position, false));
+		segments.add(new Wormsegment(lastPosition, position.clone(), false));
 	}
 	
 	public void draw(Canvas canvas) {
