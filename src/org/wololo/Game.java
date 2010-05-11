@@ -17,6 +17,6 @@ public class Game extends Activity {
         
         gameThread.setState(GameThread.STATE_READY);
         
-        gameThread.start();
+        gameThread.newGame();
     }
 }

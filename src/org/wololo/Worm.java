@@ -56,12 +56,15 @@ public class Worm {
 			
 			int width = canvas.getWidth();
 			int height = canvas.getHeight();
-			float startX = width * wormsegment.getStart().getX();
-			float startY = height * wormsegment.getStart().getY();
-			float stopX = width * wormsegment.getStop().getX();
-			float stopY = height * wormsegment.getStop().getY();
+
+			float[] points = wormsegment.asArray();
 			
-			canvas.drawLine(startX, startY, stopX, stopY, paint);
+			points[0] = points[0] * width;
+			points[1] = points[1] * height;
+			points[2] = points[2] * width;
+			points[3] = points[3] * height;
+			
+			canvas.drawLines(points, paint);
 		}
 	}
 }

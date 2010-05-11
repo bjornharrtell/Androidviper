@@ -42,7 +42,7 @@ public class GameThread extends Thread {
 		}
 	}
 
-	public void start() {
+	public void newGame() {
 		synchronized (surfaceHolder) {
 			worms.add(new Worm(new Point(0.9f, 0.9f), -0.5f, Color.WHITE));
 			state = STATE_RUNNING;

@@ -1,25 +1,26 @@
 package org.wololo;
 
 public class Point {
-	private float x;
-	private float y;
 	
+	float x;
+	float y;
+
 	public Point(float x, float y) {
-		this.setX(x);
-		this.setY(y);
+		this.x = x;
+		this.y = y;
 	}
-	
+
 	public void move(float x, float y) {
-		this.setX(x);
-		this.setY(y);
+		this.x = this.x + x;
+		this.y = this.y + y;
 	}
-	
+
 	public float[] asArray() {
 		float[] floats = new float[2];
-		
-		floats[0] = getX();
-		floats[1] = getY();
-		
+
+		floats[0] = x;
+		floats[1] = y;
+
 		return floats;
 	}
 
