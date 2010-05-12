@@ -2,7 +2,7 @@ package org.wololo;
 
 public class Wormsegment extends Line {
 
-	private boolean hole = false;
+	boolean hole = false;
 	
 	public Wormsegment(Point point1, Point point2, boolean hole) {
 		super(point1, point2);

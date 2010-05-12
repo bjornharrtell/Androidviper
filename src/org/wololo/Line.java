@@ -15,15 +15,15 @@ public class Line {
 		return true;
 	}
 	
-	public float[] asArray() {
-		float[] floats = new float[4];
+	public double[] asArray() {
+		double[] doubles = new double[4];
 		
-		floats[0] = start.asArray()[0];
-		floats[1] = start.asArray()[1];
-		floats[2] = stop.asArray()[0];
-		floats[3] = stop.asArray()[1];
+		doubles[0] = start.x;
+		doubles[1] = start.y;
+		doubles[2] = stop.x;
+		doubles[3] = stop.y;
 		
-		return floats;
+		return doubles;
 	}
 
 	public Point getStart() {

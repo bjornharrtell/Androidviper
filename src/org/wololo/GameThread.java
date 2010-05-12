@@ -24,6 +24,8 @@ public class GameThread extends Thread {
 	int state;
 	boolean running = false;
 
+	long lastTime;
+
 	Game game;
 
 	List<Worm> worms = new ArrayList<Worm>();
@@ -42,9 +44,13 @@ public class GameThread extends Thread {
 
 	public void newGame() {
 		synchronized (surfaceHolder) {
-			// TODO more initial game state stuff..? 
+			// TODO more initial game state stuff..?
 			worms.add(new Worm(new Point(0.2f, 0.2f), 0.4f, Color.WHITE));
-			worms.add(new Worm(new Point(0.8f, 0.8f), -2.2f, Color.BLUE));
+			// worms.add(new Worm(new Point(0.8f, 0.8f), -2.2f, Color.BLUE));
+
+			// make physics calc start in about 100 ms
+			lastTime = System.currentTimeMillis() + 100;
+
 			state = STATE_RUNNING;
 		}
 	}
@@ -80,20 +86,29 @@ public class GameThread extends Thread {
 
 	void draw(Canvas canvas) {
 		canvas.drawColor(Color.BLACK);
-		
+
 		for (Worm worm : worms) {
 			worm.draw(canvas);
 		}
-		
+
 		canvas.save();
 		canvas.restore();
 	}
 
 	void updatePhysics() {
+
+		long now = System.currentTimeMillis();
+
+		if (lastTime > now)
+			return;
+
+		long elapsed = now - lastTime;
+
 		for (Worm worm : worms) {
-			// TODO implement timestep stuff
-			worm.move(30);
+			worm.move(elapsed);
 		}
+
+		lastTime = now;
 	}
 
 	public void setRunning(boolean running) {

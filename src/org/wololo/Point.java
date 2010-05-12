@@ -2,10 +2,10 @@ package org.wololo;
 
 public class Point {
 	
-	float x;
-	float y;
+	double x;
+	double y;
 
-	public Point(float x, float y) {
+	public Point(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -14,33 +14,33 @@ public class Point {
 		return new Point(x, y);
 	}
 
-	public void move(float x, float y) {
+	public void move(double x, double y) {
 		this.x = this.x + x;
 		this.y = this.y + y;
 	}
 
-	public float[] asArray() {
-		float[] floats = new float[2];
+	public double[] asArray() {
+		double[] doubles = new double[2];
 
-		floats[0] = x;
-		floats[1] = y;
+		doubles[0] = x;
+		doubles[1] = y;
 
-		return floats;
+		return doubles;
 	}
 
-	void setX(float x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 
-	float getX() {
+	public double getX() {
 		return x;
 	}
 
-	void setY(float y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 
-	float getY() {
+	public double getY() {
 		return y;
 	}
 }
