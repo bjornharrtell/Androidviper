@@ -10,7 +10,7 @@ public class Line {
 	}
 	
 	public boolean intersects(Line line) {
-		// TODO: implement
+		// TODO implement (got c++ code)
 		
 		return true;
 	}

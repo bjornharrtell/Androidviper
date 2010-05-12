@@ -33,9 +33,7 @@ public class GameThread extends Thread {
 		this.surfaceHolder = surfaceHolder;
 	}
 
-	/* Callback invoked when the surface dimensions change. */
 	public void setSurfaceSize(int width, int height) {
-		// synchronized to make sure these all change atomically
 		synchronized (surfaceHolder) {
 			canvasWidth = width;
 			canvasHeight = height;
@@ -44,7 +42,9 @@ public class GameThread extends Thread {
 
 	public void newGame() {
 		synchronized (surfaceHolder) {
-			worms.add(new Worm(new Point(0.9f, 0.9f), -0.5f, Color.WHITE));
+			// TODO more initial game state stuff..? 
+			worms.add(new Worm(new Point(0.2f, 0.2f), 0.4f, Color.WHITE));
+			worms.add(new Worm(new Point(0.8f, 0.8f), -2.2f, Color.BLUE));
 			state = STATE_RUNNING;
 		}
 	}
@@ -79,6 +79,8 @@ public class GameThread extends Thread {
 	}
 
 	void draw(Canvas canvas) {
+		canvas.drawColor(Color.BLACK);
+		
 		for (Worm worm : worms) {
 			worm.draw(canvas);
 		}
@@ -89,6 +91,7 @@ public class GameThread extends Thread {
 
 	void updatePhysics() {
 		for (Worm worm : worms) {
+			// TODO implement timestep stuff
 			worm.move(30);
 		}
 	}

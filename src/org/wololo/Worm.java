@@ -13,8 +13,8 @@ public class Worm {
 	
 	boolean alive = true;
 	int score = 0;
-	int color = Color.WHITE;
-	
+	Paint paint = new Paint();
+
 	float velocity;
 	float torque = 0;
 	float direction;
@@ -26,7 +26,10 @@ public class Worm {
 	public Worm(Point position, float direction, int color) {
 		this.position = position;
 		this.direction = direction;
-		this.color = color;
+
+		paint.setColor(color);
+		paint.setAntiAlias(true);
+		paint.setStrokeWidth(2);
 	}
 	
 	/**
@@ -35,7 +38,7 @@ public class Worm {
 	 * @return
 	 */
 	CollisionType collisionTest(Line line) {
-		// TODO: implement
+		// TODO implement (got c++ code)
 		
 		return CollisionType.NOCOLLISION;
 	}
@@ -43,16 +46,20 @@ public class Worm {
 	public void move(int timestep) {
 		lastPosition = position.clone();
 		
+		// TODO need logic to handle timestep, rotation dep. on speed, collisions, holes (got c++ code)
 		position.move(0.01f, 0.01f);
 		
 		segments.add(new Wormsegment(lastPosition, position.clone(), false));
 	}
 	
+	/**
+	 * Draw the complete worm from start
+	 * 
+	 * TODO: optimize... using Path?
+	 * @param canvas
+	 */
 	public void draw(Canvas canvas) {
 		for (Wormsegment wormsegment: segments) {
-			Paint paint = new Paint();
-			paint.setColor(color);
-			paint.setStrokeWidth(1.0f);
 			
 			int width = canvas.getWidth();
 			int height = canvas.getHeight();
