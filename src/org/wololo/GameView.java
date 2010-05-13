@@ -3,6 +3,7 @@ package org.wololo;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -22,7 +23,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 		setFocusable(true); // make sure we get key events
 	}
 
-	private GameThread gameThread;
+	GameThread gameThread;
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
@@ -51,9 +52,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 			}
 		}
 	}
+	
+	/**
+     * Standard override to get key-press events.
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent msg) {
+        return gameThread.doKeyDown(keyCode, msg);
+    }
 
-	public GameThread getGameThread() {
-		return gameThread;
-	}
+    /**
+     * Standard override for key-up. We actually care about these, so we can
+     * stop rotating.
+     */
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent msg) {
+        return gameThread.doKeyUp(keyCode, msg);
+    }
+
 
 }

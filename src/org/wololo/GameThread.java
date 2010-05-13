@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 
 public class GameThread extends Thread {
@@ -117,5 +118,59 @@ public class GameThread extends Thread {
 
 	public void setState(int state) {
 		this.state = state;
+	}
+
+	/**
+	 * Handles a key-down event.
+	 * 
+	 * @param keyCode
+	 *            the key that was pressed
+	 * @param msg
+	 *            the original event object
+	 * @return true
+	 */
+	boolean doKeyDown(int keyCode, KeyEvent msg) {
+		synchronized (surfaceHolder) {
+			if (state != STATE_RUNNING)
+				return false;
+
+			if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+				worms.get(0).setTorque(-0.001);
+				return true;
+			} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+				worms.get(0).setTorque(0.001);
+				return true;
+			}
+
+			return false;
+		}
+	}
+
+	/**
+	 * Handles a key-up event.
+	 * 
+	 * @param keyCode
+	 *            the key that was pressed
+	 * @param msg
+	 *            the original event object
+	 * @return true if the key was handled and consumed, or else false
+	 */
+	boolean doKeyUp(int keyCode, KeyEvent msg) {
+		boolean handled = false;
+
+		synchronized (surfaceHolder) {
+			if (state != STATE_RUNNING)
+				return handled;
+
+			if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+					|| keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+
+				worms.get(0).setTorque(0);
+
+				handled = true;
+			}
+		}
+
+		return handled;
 	}
 }

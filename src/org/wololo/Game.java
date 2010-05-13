@@ -16,10 +16,9 @@ public class Game extends Activity {
         setContentView(R.layout.main);
 
         GameView gameView = (GameView) findViewById(R.id.GameView01);
-        GameThread gameThread = gameView.getGameThread();
+
+        gameView.gameThread.setState(GameThread.STATE_READY);
         
-        gameThread.setState(GameThread.STATE_READY);
-        
-        gameThread.newGame();
+        gameView.gameThread.newGame();
     }
 }

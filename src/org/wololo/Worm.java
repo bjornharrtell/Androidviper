@@ -18,7 +18,7 @@ public class Worm {
 	Paint holePaint;
 
 	double velocity = 0.00005;
-	double torque = 0.0001;
+	double torque = 0;
 	double direction;
 	double distance = 0;
 	double holeDistance = 0;
@@ -151,5 +151,13 @@ public class Worm {
 
 			canvas.drawLine(startX, startY, stopX, stopY, wormsegment.isHole() ? holePaint : this.paint);
 		}
+	}
+
+	void setTorque(double torque) {
+		this.torque = torque;
+	}
+
+	double getTorque() {
+		return torque;
 	}
 }
