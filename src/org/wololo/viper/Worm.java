@@ -1,4 +1,4 @@
-package org.wololo;
+package org.wololo.viper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import android.graphics.Paint;
 
 public class Worm {
 
-	enum CollisionType {
-		NOCOLLISION, COLLISIONWORM, COLLISIONHOLE
-	};
+	static final int NOCOLLISION = 0;
+	static final int COLLISIONWORM = 1;
+	static final int COLLISIONHOLE = 2;
 
 	boolean alive = true;
 	int score = 0;
@@ -43,22 +43,10 @@ public class Worm {
 
 		holePaint = new Paint(paint);
 		holePaint.setAlpha(50);
-		/*holePaint.setColor(Color.BLUE);
-		holePaint.setAntiAlias(true);
-		holePaint.setStrokeWidth(2);*/
-	}
-
-	/**
-	 * Check collision status for a "move"
-	 * 
-	 * @param line
-	 *            Expected to represent a "move" for the worm
-	 * @return
-	 */
-	CollisionType collisionTest(Line line) {
-		// TODO implement (got c++ code)
-
-		return CollisionType.NOCOLLISION;
+		/*
+		 * holePaint.setColor(Color.BLUE); holePaint.setAntiAlias(true);
+		 * holePaint.setStrokeWidth(2);
+		 */
 	}
 
 	public void move(long time) {
@@ -76,12 +64,12 @@ public class Worm {
 
 			// find wall collisions and if true reflect direction and redo the
 			// move
-			if ((x < 0.0) || (x > 1.0)) {
+			if ((x < 0) || (x > 1)) {
 				direction = Math.PI - direction;
 				wallCollision = true;
 				break;
 			}
-			if ((y < 0.0) || (y > 0.95)) {
+			if ((y < 0) || (y > 1)) {
 				direction = -direction;
 				wallCollision = true;
 				break;
@@ -100,22 +88,22 @@ public class Worm {
 	}
 
 	/**
-	 * Determine if a hole is to be created and update hole status with each call
+	 * Determine if a hole is to be created and update hole status with each
+	 * call
+	 * 
 	 * @return
 	 */
 	boolean recordHole() {
 		double holeInterval = 0.3f;
 		// calc hole length to make it longer as the velocity increases
-		double holeLength = holeInterval
-				/ (14.0 * (1.0 - ((velocity - 0.00005) * 2500.0)));
+		double holeLength = holeInterval / (14.0 * (1.0 - ((velocity - 0.00005) * 2500.0)));
 
 		if ((distance > (holeDistance + holeInterval)) && (hole == false)) {
 			hole = true;
 			holes++;
 		}
 
-		if ((distance > (holeDistance + holeInterval + holeLength))
-				&& (hole == true)) {
+		if ((distance > (holeDistance + holeInterval + holeLength)) && (hole == true)) {
 			hole = false;
 			holeDistance = distance;
 		}
@@ -124,33 +112,46 @@ public class Worm {
 	}
 
 	/**
-	 * Draw the complete worm from start
+	 * Draw the last moved segment of the worm
 	 * 
-	 * TODO: optimize... using Path? cached bitmap? I don't know :(
-	 * 
-	 * @param canvas
+	 * @param canvas The Canvas to draw on
 	 */
 	public void draw(Canvas canvas) {
-		for (Wormsegment wormsegment : segments) {
+		if (segments.size() < 1)
+			return;
 
-			int width = canvas.getWidth();
-			int height = canvas.getHeight();
+		Wormsegment wormsegment = segments.get(segments.size() - 1);
 
-			double[] points = wormsegment.asArray();
+		int width = canvas.getWidth();
+		int height = canvas.getHeight();
 
-			float startX = (float) points[0] * width;
-			float startY = (float) points[1] * height;
-			float stopX = (float) points[2] * width;
-			float stopY = (float) points[3] * height;
+		double[] points = wormsegment.asArray();
 
-			// doesn't seem better :/
-			/*
-			 * Path path = new Path(); path.moveTo(startX, startY);
-			 * path.lineTo(stopX, stopY); canvas.drawPath(path, paint);
-			 */
+		float startX = (float) points[0] * (width - 1);
+		float startY = (float) points[1] * (height - 1);
+		float stopX = (float) points[2] * (width - 1);
+		float stopY = (float) points[3] * (height - 1);
 
-			canvas.drawLine(startX, startY, stopX, stopY, wormsegment.isHole() ? holePaint : this.paint);
+		canvas.drawLine(startX, startY, stopX, stopY, wormsegment.isHole() ? holePaint : this.paint);
+	}
+	
+	int collisionTest(Line line) {
+		if (segments.size()<3) return NOCOLLISION;
+		
+		for (int i=0; i<segments.size()-2; i++) {
+			Wormsegment segment = segments.get(i);
+
+			if (line.intersects(segment)) {
+				if (segment.hole) {
+					return COLLISIONHOLE;
+				}
+				else {
+					return COLLISIONWORM;
+				}
+			}
 		}
+
+		return NOCOLLISION;
 	}
 
 	void setTorque(double torque) {

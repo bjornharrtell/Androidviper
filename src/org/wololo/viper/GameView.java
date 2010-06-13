@@ -1,11 +1,16 @@
-package org.wololo;
+package org.wololo.viper;
+
+import com.admob.android.ads.AdView;
 
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -24,6 +29,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 	}
 
 	GameThread gameThread;
+	
+	private AdView mAd;
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
@@ -32,7 +39,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-
 		// start the thread here so that we don't busy-wait in run()
 		// waiting for the surface to be created
 		gameThread.setRunning(true);
@@ -52,23 +58,41 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 			}
 		}
 	}
-	
+
 	/**
      * Standard override to get key-press events.
      */
-    @Override
+    /*@Override
     public boolean onKeyDown(int keyCode, KeyEvent msg) {
         return gameThread.doKeyDown(keyCode, msg);
-    }
+    }*/
 
     /**
      * Standard override for key-up. We actually care about these, so we can
      * stop rotating.
      */
-    @Override
+    /*Override
     public boolean onKeyUp(int keyCode, KeyEvent msg) {
         return gameThread.doKeyUp(keyCode, msg);
+    }*/
+    
+    /*
+    @Override
+    public boolean onTrackballEvent(MotionEvent motionEvent) {
+    	return gameThread.onTrackballEvent(motionEvent);
+    }*/
+    
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+		return gameThread.onTouchEvent(motionEvent);
     }
 
+	public void setmAd(AdView mAd) {
+		this.mAd = mAd;
+	}
 
+	public AdView getmAd() {
+		return mAd;
+	}
 }

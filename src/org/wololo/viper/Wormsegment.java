@@ -1,4 +1,4 @@
-package org.wololo;
+package org.wololo.viper;
 
 public class Wormsegment extends Line {
 

@@ -1,4 +1,4 @@
-package org.wololo;
+package org.wololo.viper;
 
 public class Point {
 	
@@ -43,4 +43,5 @@ public class Point {
 	public double getY() {
 		return y;
 	}
+
 }
