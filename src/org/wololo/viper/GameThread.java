@@ -13,7 +13,9 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Bitmap.Config;
 import android.graphics.Paint.Style;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -30,6 +32,10 @@ public class GameThread extends Thread {
 	public static final int STATE_RUNNING = 4;
 	public static final int STATE_WIN = 5;
 
+	private AdView adView;
+	
+	Handler handler;
+
 	SurfaceHolder surfaceHolder;
 	int canvasWidth;
 	int canvasHeight;
@@ -43,6 +49,7 @@ public class GameThread extends Thread {
 	int state;
 	boolean running = false;
 
+	boolean firstRun = true;
 	boolean firstTimestep = true;
 
 	long lastTime;
@@ -53,6 +60,7 @@ public class GameThread extends Thread {
 
 	public GameThread(SurfaceHolder surfaceHolder, Context context, Handler handler) {
 		this.surfaceHolder = surfaceHolder;
+		this.handler = handler;
 	}
 
 	public void setSurfaceSize(int width, int height) {
@@ -89,15 +97,11 @@ public class GameThread extends Thread {
 	public void newGame(AdView adView) {
 		synchronized (surfaceHolder) {
 			
-
-			adView.setVisibility( View.VISIBLE );
-
-			// The ad will fade in over 0.4 seconds.
-			AlphaAnimation animation = new AlphaAnimation( 0.0f, 1.0f );
-			animation.setDuration( 400 );
-			animation.setFillAfter( true );
-			animation.setInterpolator( new AccelerateInterpolator() );
-			adView.startAnimation( animation );
+			Message msg = handler.obtainMessage();
+			Bundle data = new Bundle();
+			data.putInt("viz", View.GONE);
+			msg.setData(data);
+			handler.sendMessage(msg);
 			
 			// TODO more initial game state stuff..?
 			worms.clear();
@@ -128,13 +132,16 @@ public class GameThread extends Thread {
 				synchronized (surfaceHolder) {
 					if (state == STATE_RUNNING) {
 						timestep(canvas);
-					}
-					else {
-						Paint text = new Paint();
-						text.setColor(Color.WHITE);
-						text.setStyle(Style.STROKE);
-						canvas.drawText("Welcome to Viper 1.1 (c) 2010 Björn Harrtell", 10, 20, text);
-						canvas.drawText("Press MENU", 10, 35, text);
+					} else {						
+						if (firstRun) {
+							Message msg = handler.obtainMessage();
+							Bundle data = new Bundle();
+							data.putInt("viz", View.VISIBLE);
+							msg.setData(data);
+							handler.sendMessage(msg);
+							
+							firstRun = false;
+						}
 					}
 				}
 			} finally {
@@ -183,20 +190,19 @@ public class GameThread extends Thread {
 		canvas.drawRect(0, canvasBoardOffsetY, canvasWidth - 1, canvasHeight - 1, background);
 		canvas.drawBitmap(boardBitmap, canvasBoardOffsetX, canvasBoardOffsetY, null);
 
-		//if (firstTimestep) {
+		// if (firstTimestep) {
 
-			Paint touchZone = new Paint();
-			touchZone.setColor(Color.RED);
-			touchZone.setStyle(Style.FILL);
-			Rect rect = new Rect(0, canvasHeight - 40, 40, canvasHeight - 1);
-			canvas.drawRect(rect, touchZone);
-			rect = new Rect(canvasWidth - 40, canvasHeight - 40, canvasWidth - 1, canvasHeight - 1);
-			canvas.drawRect(rect, touchZone);
+		Paint touchZone = new Paint();
+		touchZone.setColor(Color.RED);
+		touchZone.setStyle(Style.FILL);
+		Rect rect = new Rect(0, canvasHeight - 40, 40, canvasHeight - 1);
+		canvas.drawRect(rect, touchZone);
+		rect = new Rect(canvasWidth - 40, canvasHeight - 40, canvasWidth - 1, canvasHeight - 1);
+		canvas.drawRect(rect, touchZone);
 
-		//	firstTimestep = false;
-		//}
-		
-	    
+		// firstTimestep = false;
+		// }
+
 		Paint text = new Paint();
 		text.setColor(Color.WHITE);
 		text.setStyle(Style.STROKE);
@@ -309,5 +315,13 @@ public class GameThread extends Thread {
 		}
 
 		return false;
+	}
+
+	public void setAdView(AdView ad) {
+		this.adView = ad;
+	}
+
+	public AdView getAd() {
+		return adView;
 	}
 }

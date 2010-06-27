@@ -1,9 +1,9 @@
 package org.wololo.viper;
 
-import com.admob.android.ads.AdView;
-
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -11,6 +11,9 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
+
+import com.admob.android.ads.AdView;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -23,17 +26,40 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 		// create thread only; it's started in surfaceCreated()
 		gameThread = new GameThread(holder, context, new Handler() {
+			private boolean firstTime = true;
+
+			@Override
+			public void handleMessage(Message m) {
+				Bundle data = m.getData();
+
+				int visibility = data.getInt("viz");
+
+				if (visibility == VISIBLE) {
+
+					adView.setVisibility(VISIBLE);
+					
+					// The ad will fade in over 0.4 seconds.
+					AlphaAnimation animation = new AlphaAnimation(0.0f, 1.0f);
+					animation.setDuration(400);
+					animation.setFillAfter(true);
+					animation.setInterpolator(new AccelerateInterpolator());
+					adView.startAnimation(animation);
+				} else {
+					adView.setVisibility(GONE);
+					textView.setVisibility(GONE);
+				}
+			}
 		});
 
 		setFocusable(true); // make sure we get key events
 	}
 
 	GameThread gameThread;
-	
-	private AdView mAd;
 
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {
+	private AdView adView;
+	private TextView textView;
+
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
 		gameThread.setSurfaceSize(width, height);
 	}
@@ -60,39 +86,38 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 	}
 
 	/**
-     * Standard override to get key-press events.
-     */
-    /*@Override
-    public boolean onKeyDown(int keyCode, KeyEvent msg) {
-        return gameThread.doKeyDown(keyCode, msg);
-    }*/
+	 * Standard override to get key-press events.
+	 */
+	/*
+	 * @Override public boolean onKeyDown(int keyCode, KeyEvent msg) { return
+	 * gameThread.doKeyDown(keyCode, msg); }
+	 */
 
-    /**
-     * Standard override for key-up. We actually care about these, so we can
-     * stop rotating.
-     */
-    /*Override
-    public boolean onKeyUp(int keyCode, KeyEvent msg) {
-        return gameThread.doKeyUp(keyCode, msg);
-    }*/
-    
-    /*
-    @Override
-    public boolean onTrackballEvent(MotionEvent motionEvent) {
-    	return gameThread.onTrackballEvent(motionEvent);
-    }*/
-    
+	/**
+	 * Standard override for key-up. We actually care about these, so we can
+	 * stop rotating.
+	 */
+	/*
+	 * Override public boolean onKeyUp(int keyCode, KeyEvent msg) { return
+	 * gameThread.doKeyUp(keyCode, msg); }
+	 */
 
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent) {
+	/*
+	 * @Override public boolean onTrackballEvent(MotionEvent motionEvent) {
+	 * return gameThread.onTrackballEvent(motionEvent); }
+	 */
+
+	@Override
+	public boolean onTouchEvent(MotionEvent motionEvent) {
 		return gameThread.onTouchEvent(motionEvent);
-    }
-
-	public void setmAd(AdView mAd) {
-		this.mAd = mAd;
 	}
 
-	public AdView getmAd() {
-		return mAd;
+	public void setAdView(AdView adView) {
+		this.adView = adView;
+		this.gameThread.setAdView(adView);
+	}
+	
+	public void setTextView(TextView textView) {
+		this.textView = textView;
 	}
 }

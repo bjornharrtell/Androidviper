@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.TextView;
 
 public class Game extends Activity implements AdListener {
     
@@ -19,7 +20,8 @@ public class Game extends Activity implements AdListener {
 	static final int MENU_QUIT = 2;
 	
 	GameView gameView;
-	AdView ad;
+	AdView adView;
+	TextView textView;
 	
 	/** Called when the activity is first created. */
     @Override
@@ -31,12 +33,16 @@ public class Game extends Activity implements AdListener {
         setContentView(R.layout.game);
         
         gameView = (GameView) findViewById(R.id.GameView01);
+        textView = (TextView) findViewById(R.id.TextView01);
+        textView.setText("Viper 1.3.4 (c) 2010 Björn Harrtell\nPress MENU");
+        adView = (AdView) findViewById(R.id.ad);
+        adView.setAdListener(new ViperListener());
         
-        ad = (AdView) findViewById(R.id.ad);
-        ad.setAdListener(new LunarLanderListener());
+        gameView.setAdView(adView);
+        gameView.setTextView(textView);
     }
     
-    private class LunarLanderListener extends SimpleAdListener
+    private class ViperListener extends SimpleAdListener
     {
 		@Override
 		public void onFailedToReceiveAd(AdView adView)
@@ -93,14 +99,15 @@ public class Game extends Activity implements AdListener {
         switch (item.getItemId()) {
         case MENU_NEW_GAME1:
         	gameView.gameThread.setState(GameThread.STATE_READY);
-            gameView.gameThread.newGame(ad);
+            gameView.gameThread.newGame(adView);
             return true;
         case MENU_NEW_GAME2:
         	gameView.gameThread.setState(GameThread.STATE_READY);
-            gameView.gameThread.newGame(ad);
+            gameView.gameThread.newGame(adView);
             return true;
         case MENU_QUIT:
             gameView.gameThread.setRunning(false);
+            this.finish();
             return true;
         }
         return false;
