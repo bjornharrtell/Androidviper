@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.admob.android.ads.AdView;
+import com.admob.android.ads.SimpleAdListener;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,14 +17,21 @@ import android.graphics.Paint.Style;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 
-public class GameThread extends Thread {
+public class GameThread extends Thread implements SensorListener {
 
 	public static final int STATE_UNINITIALIZED = 0;
 	public static final int STATE_LOSE = 1;
@@ -33,8 +41,10 @@ public class GameThread extends Thread {
 	public static final int STATE_WIN = 5;
 
 	private AdView adView;
-	
+
 	Handler handler;
+
+	SensorManager sensorManager;
 
 	SurfaceHolder surfaceHolder;
 	int canvasWidth;
@@ -61,6 +71,10 @@ public class GameThread extends Thread {
 	public GameThread(SurfaceHolder surfaceHolder, Context context, Handler handler) {
 		this.surfaceHolder = surfaceHolder;
 		this.handler = handler;
+
+		sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+		sensorManager.registerListener(this, SensorManager.SENSOR_ORIENTATION, SensorManager.SENSOR_DELAY_GAME);
+
 	}
 
 	public void setSurfaceSize(int width, int height) {
@@ -96,13 +110,13 @@ public class GameThread extends Thread {
 
 	public void newGame(AdView adView) {
 		synchronized (surfaceHolder) {
-			
+
 			Message msg = handler.obtainMessage();
 			Bundle data = new Bundle();
 			data.putInt("viz", View.GONE);
 			msg.setData(data);
 			handler.sendMessage(msg);
-			
+
 			// TODO more initial game state stuff..?
 			worms.clear();
 			worms.add(new Worm(new Point(0.2f, 0.2f), 0.4f, Color.WHITE));
@@ -113,7 +127,7 @@ public class GameThread extends Thread {
 
 			state = STATE_RUNNING;
 
-			initBitmap();
+			initBitmap();			
 		}
 	}
 
@@ -132,14 +146,14 @@ public class GameThread extends Thread {
 				synchronized (surfaceHolder) {
 					if (state == STATE_RUNNING) {
 						timestep(canvas);
-					} else {						
+					} else {
 						if (firstRun) {
 							Message msg = handler.obtainMessage();
 							Bundle data = new Bundle();
 							data.putInt("viz", View.VISIBLE);
 							msg.setData(data);
 							handler.sendMessage(msg);
-							
+	
 							firstRun = false;
 						}
 					}
@@ -190,26 +204,10 @@ public class GameThread extends Thread {
 		canvas.drawRect(0, canvasBoardOffsetY, canvasWidth - 1, canvasHeight - 1, background);
 		canvas.drawBitmap(boardBitmap, canvasBoardOffsetX, canvasBoardOffsetY, null);
 
-		// if (firstTimestep) {
-
-		Paint touchZone = new Paint();
-		touchZone.setColor(Color.RED);
-		touchZone.setStyle(Style.FILL);
-		Rect rect = new Rect(0, canvasHeight - 40, 40, canvasHeight - 1);
-		canvas.drawRect(rect, touchZone);
-		rect = new Rect(canvasWidth - 40, canvasHeight - 40, canvasWidth - 1, canvasHeight - 1);
-		canvas.drawRect(rect, touchZone);
-
-		// firstTimestep = false;
-		// }
-
 		Paint text = new Paint();
 		text.setColor(Color.WHITE);
 		text.setStyle(Style.STROKE);
 		canvas.drawText("Score: " + worms.get(0).score, 50, canvasHeight - 20, text);
-
-		// canvas.save();
-		// canvas.restore();
 
 		lastTime = now;
 	}
@@ -222,106 +220,26 @@ public class GameThread extends Thread {
 		this.state = state;
 	}
 
-	/**
-	 * Handles a key-down event.
-	 * 
-	 * @param keyCode
-	 *            the key that was pressed
-	 * @param msg
-	 *            the original event object
-	 * @return true
-	 */
-	boolean doKeyDown(int keyCode, KeyEvent msg) {
-		synchronized (surfaceHolder) {
-			if (state != STATE_RUNNING)
-				return false;
-
-			if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-				worms.get(0).setTorque(-0.001);
-				return true;
-			} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-				worms.get(0).setTorque(0.001);
-				return true;
-			}
-
-			return false;
-		}
-	}
-
-	/**
-	 * Handles a key-up event.
-	 * 
-	 * @param keyCode
-	 *            the key that was pressed
-	 * @param msg
-	 *            the original event object
-	 * @return true if the key was handled and consumed, or else false
-	 */
-	boolean doKeyUp(int keyCode, KeyEvent msg) {
-		boolean handled = false;
-
-		synchronized (surfaceHolder) {
-			if (state != STATE_RUNNING)
-				return handled;
-
-			if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-
-				worms.get(0).setTorque(0);
-
-				handled = true;
-			}
-		}
-
-		return handled;
-	}
-
-	boolean onTrackballEvent(MotionEvent motionEvent) {
-		boolean handled = false;
-
-		synchronized (surfaceHolder) {
-			if (motionEvent.getX() == 0) {
-				worms.get(0).setTorque(0);
-				handled = true;
-			} else if (motionEvent.getX() > 0) {
-				worms.get(0).setTorque(0.001);
-				handled = true;
-			} else if (motionEvent.getX() < 0) {
-				worms.get(0).setTorque(-0.001);
-				handled = true;
-			}
-		}
-
-		return handled;
-	}
-
-	public boolean onTouchEvent(MotionEvent motionEvent) {
-		switch (motionEvent.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-			if (motionEvent.getX() < 40 && motionEvent.getY() > canvasHeight - 40) {
-				worms.get(0).setTorque(0.001);
-			} else if (motionEvent.getX() > canvasWidth - 40 && motionEvent.getY() > canvasHeight - 40) {
-				worms.get(0).setTorque(-0.001);
-			}
-
-			return true;
-		case MotionEvent.ACTION_UP:
-			if (motionEvent.getX() < 40 && motionEvent.getY() > canvasHeight - 40) {
-				worms.get(0).setTorque(0);
-			} else if (motionEvent.getX() > canvasWidth - 40 && motionEvent.getY() > canvasHeight - 40) {
-				worms.get(0).setTorque(0);
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
 	public void setAdView(AdView ad) {
 		this.adView = ad;
 	}
 
 	public AdView getAd() {
 		return adView;
+	}
+
+	public void onSensorChanged(int sensor, float[] values) {
+		synchronized (surfaceHolder) {
+			if (sensor == SensorManager.SENSOR_ORIENTATION) {
+				if (worms.size() > 0) {
+					worms.get(0).setTorque(values[2] / 4000);
+				}
+			}
+		}
+	}
+
+	public void onAccuracyChanged(int sensor, int accuracy) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -17,8 +18,14 @@ import com.admob.android.ads.AdView;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
+	PowerManager.WakeLock wl;
+	
 	public GameView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		
+		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
+		
 
 		// register our interest in hearing about changes to our surface
 		SurfaceHolder holder = getHolder();
@@ -69,6 +76,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 		// waiting for the surface to be created
 		gameThread.setRunning(true);
 		gameThread.start();
+		
+		wl.acquire();
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
@@ -83,35 +92,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 			} catch (InterruptedException e) {
 			}
 		}
+		
+		wl.release();
 	}
-
-	/**
-	 * Standard override to get key-press events.
-	 */
-	/*
-	 * @Override public boolean onKeyDown(int keyCode, KeyEvent msg) { return
-	 * gameThread.doKeyDown(keyCode, msg); }
-	 */
-
-	/**
-	 * Standard override for key-up. We actually care about these, so we can
-	 * stop rotating.
-	 */
-	/*
-	 * Override public boolean onKeyUp(int keyCode, KeyEvent msg) { return
-	 * gameThread.doKeyUp(keyCode, msg); }
-	 */
-
-	/*
-	 * @Override public boolean onTrackballEvent(MotionEvent motionEvent) {
-	 * return gameThread.onTrackballEvent(motionEvent); }
-	 */
-
-	@Override
-	public boolean onTouchEvent(MotionEvent motionEvent) {
-		return gameThread.onTouchEvent(motionEvent);
-	}
-
+	
 	public void setAdView(AdView adView) {
 		this.adView = adView;
 		this.gameThread.setAdView(adView);

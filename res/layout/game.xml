@@ -8,13 +8,15 @@
 	<RelativeLayout android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
 		<com.admob.android.ads.AdView android:id="@+id/ad"
-			android:visibility="gone" android:layout_width="fill_parent"
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content" android:layout_alignParentTop="true" />
 	</RelativeLayout>
+	
 	<RelativeLayout android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
 		<TextView
 			android:id="@+id/TextView01" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:layout_centerInParent="true"></TextView>
 	</RelativeLayout>
+	
 </FrameLayout>
