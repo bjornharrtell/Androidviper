@@ -34,7 +34,7 @@ public class Game extends Activity implements AdListener {
 
 		gameView = (GameView) findViewById(R.id.GameView01);
 		textView = (TextView) findViewById(R.id.TextView01);
-		textView.setText("Viper 1.5.0 (c) 2010 Björn Harrtell\nPress MENU");
+		textView.setText("Viper 1.6.0 (c) 2010 Björn Harrtell\nPress MENU");
 		adView = (AdView) findViewById(R.id.ad);
 		adView.setAdListener(new ViperListener());
 
