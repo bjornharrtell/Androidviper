@@ -14,6 +14,7 @@
                          <param-value>org.wololo.viper.ViperRestletApplication</param-value>
                  </init-param>
          </servlet>
+         
  
     <!-- Catch all requests -->
     <servlet-mapping>

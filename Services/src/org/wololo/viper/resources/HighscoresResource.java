@@ -1,9 +1,13 @@
 package org.wololo.viper.resources;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.jdo.Extent;
+import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,26 +25,38 @@ public class HighscoresResource extends ServerResource {
 	public JsonRepresentation represent() throws JSONException {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
-		// JSONObject response = new JSONObject();
-		JSONArray highscores = new JSONArray();
-		// response.append("highscores", highscores);
+		JSONObject response = new JSONObject();
 
 		try {
-			Extent<Highscore> extent = pm.getExtent(Highscore.class, false);
+			Query query = pm.newQuery(Highscore.class);
+			query.setOrdering("score desc");
+			JSONArray highscoresResult = new JSONArray();
+			List<Highscore> highscores = (List<Highscore>) query.execute();
+
 			int count = 0;
-			for (Highscore entity : extent) {
-				highscores.put(entity.toJSONObject());
+			for (Highscore highscore : highscores) {
+				if (count > 10) {
+					pm.deletePersistent(highscore);
+				} else {
+					highscoresResult.put(new JSONObject(highscore));
+				}
 				count++;
 			}
-			extent.closeAll();
+			query.closeAll();
 
+			response.put("success", true);
+			response.put("highscores", highscoresResult);
+
+			return new JsonRepresentation(response);
+
+		} catch (JDOException e) {
+			response.put("success", false);
+			return new JsonRepresentation(response);
 		} finally {
 			pm.close();
 		}
-
-		return new JsonRepresentation(highscores);
 	}
-
+	
 	@Post
 	public JsonRepresentation create() throws JSONException {
 		Highscore highscore = new Highscore("Test", 2, new Date());
@@ -49,7 +65,7 @@ public class HighscoresResource extends ServerResource {
 		pm.makePersistent(highscore);
 
 		JSONObject response = new JSONObject();
-		response.append("success", true);
+		response.put("success", true);
 
 		return new JsonRepresentation(response);
 	}

@@ -16,13 +16,15 @@ import org.wololo.viper.pojos.Highscore;
 public class HighscoreResource extends ServerResource {
 	
 	@Get
-	public void dummy() throws JSONException {
+	public String dummy() throws JSONException {
 		create();
+		
+		return "ok";
 	}
 	
 	@Post
 	public JsonRepresentation create() throws JSONException {
-		Highscore highscore = new Highscore("Test", 2, new Date());
+		Highscore highscore = new Highscore("Test" + System.currentTimeMillis(), 2, new Date());
 		
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		pm.makePersistent(highscore);

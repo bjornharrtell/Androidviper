@@ -16,9 +16,6 @@ import com.google.appengine.api.datastore.Key;
 @PersistenceCapable
 public class Highscore {
     @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private Key key;
-
     @Persistent
     private String name;
 
@@ -38,16 +35,11 @@ public class Highscore {
 		return name;
 	}
 	
-	public JSONObject toJSONObject() throws JSONException {
-		JSONObject json = new JSONObject();
-		json.put("name", name);
-		json.put("score", score);
-		json.put("date", date);
-		
-		return json;
+	public int getScore() {
+		return score;
 	}
 	
-	public JsonRepresentation toJsonRepresentation() throws JSONException {
-		return new JsonRepresentation(toJSONObject());
+	public Date getDate() {
+		return date;
 	}
 }
