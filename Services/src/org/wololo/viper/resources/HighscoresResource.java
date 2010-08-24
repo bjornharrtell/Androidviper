@@ -1,10 +1,8 @@
 package org.wololo.viper.resources;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.jdo.Extent;
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -38,7 +36,7 @@ public class HighscoresResource extends ServerResource {
 				if (count > 10) {
 					pm.deletePersistent(highscore);
 				} else {
-					highscoresResult.put(new JSONObject(highscore));
+					highscoresResult.put(highscore.toJSONObject());
 				}
 				count++;
 			}
@@ -59,7 +57,7 @@ public class HighscoresResource extends ServerResource {
 	
 	@Post
 	public JsonRepresentation create() throws JSONException {
-		Highscore highscore = new Highscore("Test", 2, new Date());
+		Highscore highscore = new Highscore("Test", 2, new Date(), null);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		pm.makePersistent(highscore);

@@ -6,6 +6,7 @@ import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 import org.wololo.viper.resources.DefaultResource;
 import org.wololo.viper.resources.HighscoreResource;
+import org.wololo.viper.resources.HighscoreTestResource;
 import org.wololo.viper.resources.HighscoresResource;
  
 public class ViperRestletApplication extends Application {
@@ -17,7 +18,8 @@ public class ViperRestletApplication extends Application {
         router.attachDefault(DefaultResource.class);
         
         router.attach("/highscores", HighscoresResource.class);
-        router.attach("/highscoretest", HighscoreResource.class);
+        router.attach("/highscores/{key}", HighscoreResource.class);
+        router.attach("/highscoretest", HighscoreTestResource.class);
  
         return router;
     }
