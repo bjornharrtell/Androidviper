@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/org.json.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/org.restlet.ext.json.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/org.restlet.ext.servlet.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/org.restlet.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/org.restlet.jar" sourcepath="/restlet/src/org.restlet"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

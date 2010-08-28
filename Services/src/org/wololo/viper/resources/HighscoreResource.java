@@ -1,8 +1,8 @@
 package org.wololo.viper.resources;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Date;
 
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
@@ -10,16 +10,23 @@ import javax.jdo.PersistenceManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
+import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.wololo.viper.PMF;
 import org.wololo.viper.pojos.Highscore;
 
 import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.Transform;
 
 public class HighscoreResource extends ServerResource {
 
@@ -34,7 +41,9 @@ public class HighscoreResource extends ServerResource {
 
 		@Override
 		public void write(OutputStream arg0) throws IOException {
-			arg0.write(blob.getBytes());
+			byte[] bytes = blob.getBytes();
+
+			arg0.write(bytes);
 		}
 	}
 
@@ -63,17 +72,18 @@ public class HighscoreResource extends ServerResource {
 
 		return new JsonRepresentation(response);
 	}
-	
-	@Get("txt")
-	public String getString() throws JSONException {
-		return "moo";
-	}
 
 	@Get("png")
 	public Representation getPng() {
 		Highscore highscore = getHighscore(key);
 
-		return new PictureRepresentation(highscore.getPicture());
+		Blob blob = highscore.getPicture();
+
+		if (blob == null) {
+			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND);
+		}
+
+		return new PictureRepresentation(blob);
 	}
 
 	private Highscore getHighscore(long key) {
@@ -87,16 +97,70 @@ public class HighscoreResource extends ServerResource {
 	}
 
 	@Post("json")
-	public JsonRepresentation create() throws JSONException {
-		Highscore highscore = new Highscore(
-				"Test" + System.currentTimeMillis(), 2, new Date(), null);
-
+	public JsonRepresentation update(JsonRepresentation jsonRepresentation)
+			throws Throwable {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
-		pm.makePersistent(highscore);
 
-		JSONObject response = new JSONObject();
-		response.append("success", true);
+		try {
+			pm.currentTransaction().begin();
 
-		return new JsonRepresentation(response);
+			Highscore highscore = pm.getObjectById(Highscore.class, key);
+
+			// TODO: do the updating
+
+			JSONObject response = new JSONObject();
+			response.append("success", true);
+
+			pm.currentTransaction().commit();
+
+			return new JsonRepresentation(response);
+		} catch (Throwable e) {
+			pm.currentTransaction().rollback();
+			throw e;
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Post("png")
+	public JsonRepresentation postPicture(
+			InputRepresentation inputRepresentation) throws Throwable {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+
+		try {
+			pm.currentTransaction().begin();
+
+			Highscore highscore = pm.getObjectById(Highscore.class, key);
+
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			inputRepresentation.write(byteArrayOutputStream);
+
+			ImagesService imagesService = ImagesServiceFactory
+					.getImagesService();
+
+			Image image = ImagesServiceFactory.makeImage(byteArrayOutputStream
+					.toByteArray());
+			Transform resize = ImagesServiceFactory.makeResize(200, 200);
+
+			Image newImage = imagesService.applyTransform(resize, image);
+
+			byte[] newImageData = newImage.getImageData();
+
+			Blob blob = new Blob(newImageData);
+
+			highscore.setPicture(blob);
+
+			JSONObject response = new JSONObject();
+			response.append("success", true);
+
+			pm.currentTransaction().commit();
+
+			return new JsonRepresentation(response);
+		} catch (Throwable e) {
+			pm.currentTransaction().rollback();
+			throw e;
+		} finally {
+			pm.close();
+		}
 	}
 }

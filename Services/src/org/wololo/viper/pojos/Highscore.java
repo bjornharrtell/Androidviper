@@ -54,6 +54,10 @@ public class Highscore {
 		return picture;
 	}
 	
+	public void setPicture(Blob picture) {
+		this.picture = picture;
+	}
+	
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject jsonObject = new JSONObject();
 		

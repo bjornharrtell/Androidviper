@@ -19,7 +19,7 @@ import org.wololo.viper.pojos.Highscore;
 
 public class HighscoresResource extends ServerResource {
 
-	@Get
+	@Get("json")
 	public JsonRepresentation represent() throws JSONException {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
@@ -54,10 +54,14 @@ public class HighscoresResource extends ServerResource {
 			pm.close();
 		}
 	}
-	
-	@Post
-	public JsonRepresentation create() throws JSONException {
-		Highscore highscore = new Highscore("Test", 2, new Date(), null);
+
+	@Post("json")
+	public JsonRepresentation create(JsonRepresentation jsonRepresentation)
+			throws JSONException {
+		JSONObject jsonObject = jsonRepresentation.getJsonObject();
+
+		Highscore highscore = new Highscore(jsonObject.getString("name"),
+				jsonObject.getInt("score"), new Date(), null);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		pm.makePersistent(highscore);

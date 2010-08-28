@@ -9,55 +9,8 @@
 <link rel="stylesheet" type="text/css"
 	href="http://extjs.cachefly.net/ext-3.2.1/resources/css/ext-all.css" />
 
-<script type="text/javascript">
+<script src="highscore.js" type="text/javascript"></script>
 
-Ext.onReady(function() {
-			
-	var store = new Ext.data.JsonStore({
-	    url: 'highscores',
-	    root: 'highscores',
-	    fields: [
-			{name:'name', type: 'string'},
-	        {name:'score', type: 'int'},
-	        {name:'date', type:'date', dateFormat:'time'}
-	    ]
-	});
-	store.load();
-	
-	new Ext.Viewport({
-		layout:'vbox',
-	    title: 'Highscore listing',
-	    defaults: {
-	    	border: false
-	    },
-	    items: [{html: 'Viper Highscores',margins: '20 0 10 50'},{
-	    	xtype:'listview',
-	    	store: store,
-	    	width: 400,
-	    	columns: [{
-		    	header: 'Name',
-		    	width: .3,
-		        dataIndex: 'name'
-		    },
-		    {
-		    	header: 'Score',
-		    	width: .1,
-		        dataIndex: 'score'
-		    },
-		    {
-		    	header: 'Date',
-		    	width: .6,
-		        dataIndex: 'date',
-		        tpl: '{date:date("M j Y H:i")}'
-		    }],
-		    margins: '0 0 0 50',
-	    },{
-	    	html: '<img src="highscores/1">'
-	    }]
-	    
-	});
-});
-</script>
 <body>
 </body>
 </head>
