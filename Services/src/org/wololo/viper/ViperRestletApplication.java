@@ -9,6 +9,10 @@ import org.wololo.viper.resources.HighscoresResource;
 
 public class ViperRestletApplication extends Application {
 
+	public ViperRestletApplication() {
+		setStatusService(new JsonStatusService());
+	}
+	
 	@Override
 	public Restlet createInboundRoot() {
 		Router router = new Router(getContext());

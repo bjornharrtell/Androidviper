@@ -20,10 +20,8 @@ import org.wololo.viper.pojos.Highscore;
 public class HighscoresResource extends ServerResource {
 
 	@Get("json")
-	public JsonRepresentation represent() throws JSONException {
+	public JsonRepresentation represent() throws Exception {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
-
-		JSONObject response = new JSONObject();
 
 		try {
 			Query query = pm.newQuery(Highscore.class);
@@ -42,13 +40,10 @@ public class HighscoresResource extends ServerResource {
 			}
 			query.closeAll();
 
+			JSONObject response = new JSONObject();
 			response.put("success", true);
 			response.put("highscores", highscoresResult);
 
-			return new JsonRepresentation(response);
-
-		} catch (JDOException e) {
-			response.put("success", false);
 			return new JsonRepresentation(response);
 		} finally {
 			pm.close();
@@ -57,18 +52,22 @@ public class HighscoresResource extends ServerResource {
 
 	@Post("json")
 	public JsonRepresentation create(JsonRepresentation jsonRepresentation)
-			throws JSONException {
+			throws Exception {
 		JSONObject jsonObject = jsonRepresentation.getJsonObject();
 
 		Highscore highscore = new Highscore(jsonObject.getString("name"),
 				jsonObject.getInt("score"), new Date(), null);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
-		pm.makePersistent(highscore);
+		try {
+			pm.makePersistent(highscore);
 
-		JSONObject response = new JSONObject();
-		response.put("success", true);
+			JSONObject response = new JSONObject();
+			response.put("success", true);
+			return new JsonRepresentation(response);
+		} finally {
+			pm.close();
+		}
 
-		return new JsonRepresentation(response);
 	}
 }

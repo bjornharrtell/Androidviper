@@ -1,19 +1,15 @@
 package org.wololo.viper.resources;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.InputRepresentation;
-import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -30,67 +26,51 @@ import com.google.appengine.api.images.Transform;
 
 public class HighscoreResource extends ServerResource {
 
-	private class PictureRepresentation extends OutputRepresentation {
-
-		Blob blob;
-
-		PictureRepresentation(Blob blob) {
-			super(MediaType.IMAGE_PNG);
-			this.blob = blob;
-		}
-
-		@Override
-		public void write(OutputStream arg0) throws IOException {
-			byte[] bytes = blob.getBytes();
-
-			arg0.write(bytes);
-		}
-	}
-
 	long key;
+	String ext; 
 
 	public HighscoreResource() {
 	}
 
 	public void doInit() {
+		// TODO: handle type extension?
 		key = Long.valueOf((String) this.getRequest().getAttributes()
 				.get("key"));
 	}
 
 	@Get("json")
-	public JsonRepresentation getJson() throws JSONException {
-		JSONObject response = new JSONObject();
-		response.put("success", false);
-
-		try {
-			Highscore highscore = getHighscore(key);
-			response = highscore.toJSONObject();
-			response.put("success", true);
-		} catch (JDOException e) {
-			response.put("exception", e.getMessage());
-		}
-
-		return new JsonRepresentation(response);
-	}
-
-	@Get("png")
-	public Representation getPng() {
-		Highscore highscore = getHighscore(key);
-
-		Blob blob = highscore.getPicture();
-
-		if (blob == null) {
-			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND);
-		}
-
-		return new PictureRepresentation(blob);
-	}
-
-	private Highscore getHighscore(long key) {
+	public JsonRepresentation getJson() throws Exception {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
+
 		try {
 			Highscore highscore = pm.getObjectById(Highscore.class, key);
-			return highscore;
+			JSONObject response = highscore.toJSONObject();
+			response.put("success", true);
+			return new JsonRepresentation(response);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Get
+	public Representation getDefault() {
+		return getPng();
+	}
+	
+	@Get("png")
+	public BlobRepresentation getPng() {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+
+		try {
+			Highscore highscore = pm.getObjectById(Highscore.class, key);
+			Blob blob = highscore.getPicture();
+
+			if (blob == null) {
+				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND);
+			}
+
+			return new BlobRepresentation(blob);
+
 		} finally {
 			pm.close();
 		}
@@ -98,7 +78,7 @@ public class HighscoreResource extends ServerResource {
 
 	@Post("json")
 	public JsonRepresentation update(JsonRepresentation jsonRepresentation)
-			throws Throwable {
+			throws Exception {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
 		try {
@@ -107,14 +87,12 @@ public class HighscoreResource extends ServerResource {
 			Highscore highscore = pm.getObjectById(Highscore.class, key);
 
 			// TODO: do the updating
+			pm.currentTransaction().commit();
 
 			JSONObject response = new JSONObject();
 			response.append("success", true);
-
-			pm.currentTransaction().commit();
-
 			return new JsonRepresentation(response);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			pm.currentTransaction().rollback();
 			throw e;
 		} finally {
@@ -124,7 +102,8 @@ public class HighscoreResource extends ServerResource {
 
 	@Post("png")
 	public JsonRepresentation postPicture(
-			InputRepresentation inputRepresentation) throws Throwable {
+			InputRepresentation inputRepresentation) throws Exception {
+
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
 		try {
@@ -150,13 +129,12 @@ public class HighscoreResource extends ServerResource {
 
 			highscore.setPicture(blob);
 
-			JSONObject response = new JSONObject();
-			response.append("success", true);
-
 			pm.currentTransaction().commit();
 
+			JSONObject response = new JSONObject();
+			response.append("success", true);
 			return new JsonRepresentation(response);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			pm.currentTransaction().rollback();
 			throw e;
 		} finally {
