@@ -54,7 +54,7 @@ Highscore.init = function() {
 		    	header: 'Image',
 		    	width: .2,
 		        dataIndex: 'id',
-		        tpl: '<img src="highscores/{id}" width="60" height"60">'
+		        tpl: '<img src="highscores/{id}.png" width="60" height"60">'
 		    }],
 		    margins: '0 0 0 50',
 	    }]

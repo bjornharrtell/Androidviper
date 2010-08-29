@@ -1,16 +1,21 @@
 package org.wololo.viper.resources;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.restlet.data.MediaType;
+import org.restlet.data.Preference;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
@@ -33,9 +38,22 @@ public class HighscoreResource extends ServerResource {
 	}
 
 	public void doInit() {
-		// TODO: handle type extension?
-		key = Long.valueOf((String) this.getRequest().getAttributes()
-				.get("key"));
+		String key = (String)this.getRequest().getAttributes().get("key");
+		
+		if (key.matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+")) {
+			this.key = Long.parseLong(key);
+		} else {
+			String[] split = key.split("\\.");
+			
+			this.key = Long.parseLong(split[0]);
+			this.ext = split[1];
+			
+			if (this.ext.equals("png")) {
+				List<Preference<MediaType>> temp = new ArrayList<Preference<MediaType>>();
+				temp.add(new Preference<MediaType>(MediaType.IMAGE_PNG));
+				this.getRequest().getClientInfo().setAcceptedMediaTypes(temp);
+			}
+		}
 	}
 
 	@Get("json")
