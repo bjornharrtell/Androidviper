@@ -29,7 +29,7 @@ import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 
-public class HighscoreResource extends ServerResource {
+public class HighscoreResource extends AuthServerResource {
 
 	long key;
 	String ext; 

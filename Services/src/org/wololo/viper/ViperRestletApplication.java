@@ -2,6 +2,8 @@ package org.wololo.viper;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.data.ChallengeScheme;
+import org.restlet.engine.Engine;
 import org.restlet.routing.Router;
 import org.wololo.viper.resources.DefaultResource;
 import org.wololo.viper.resources.HighscoreResource;
