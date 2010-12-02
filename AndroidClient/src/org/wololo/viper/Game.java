@@ -1,83 +1,120 @@
 package org.wololo.viper;
 
-import org.wololo.viper.R;
+import android.app.Activity;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.Window;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
+import android.widget.TextView;
 
-import com.admob.android.ads.AdListener;
 import com.admob.android.ads.AdView;
 import com.admob.android.ads.SimpleAdListener;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.Window;
-import android.widget.TextView;
-
-public class Game extends Activity implements AdListener {
+public class Game extends Activity {
 
 	static final int MENU_NEW_GAME1 = 0;
 	static final int MENU_NEW_GAME2 = 1;
 	static final int MENU_QUIT = 2;
 
-	GameView gameView;
+	SurfaceView surfaceView;
 	AdView adView;
 	TextView textView;
 
-	/** Called when the activity is first created. */
+	GameThread gameThread;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-		setContentView(R.layout.game);
+		initLayout();
 
-		gameView = (GameView) findViewById(R.id.GameView01);
-		textView = (TextView) findViewById(R.id.TextView01);
-		textView.setText("Viper 1.6.0 (c) 2010 Björn Harrtell\nPress MENU");
-		adView = (AdView) findViewById(R.id.ad);
-		adView.setAdListener(new ViperListener());
+		gameThread = new GameThread(this, new Handler() {
+			@Override
+			public void handleMessage(Message m) {
+				Bundle data = m.getData();
 
-		gameView.setAdView(adView);
-		gameView.setTextView(textView);
+				int state = data.getInt("state");
+
+				if (state == GameThread.STATE_LOSE) {
+					showMainScreen("Game over");
+				}
+			}});
+		surfaceView.getHolder().addCallback(gameThread);
+
+		adView.setAdListener(new SimpleAdListener());
+		
+		showMainScreen("Viper 1.6.0 (c) 2010 Björn Harrtell\nPress MENU");
 	}
 
-	private class ViperListener extends SimpleAdListener {
-		@Override
-		public void onFailedToReceiveAd(AdView adView) {
-			super.onFailedToReceiveAd(adView);
-		}
+	void initLayout() {
+		FrameLayout.LayoutParams frameLayoutParams;
+		RelativeLayout.LayoutParams relativeLayoutParams;
 
-		@Override
-		public void onFailedToReceiveRefreshedAd(AdView adView) {
-			super.onFailedToReceiveRefreshedAd(adView);
-		}
+		FrameLayout frameLayout = new FrameLayout(this);
 
-		@Override
-		public void onReceiveAd(AdView adView) {
-			super.onReceiveAd(adView);
-		}
+		surfaceView = new SurfaceView(this);
+		frameLayoutParams = new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		frameLayout.addView(surfaceView, frameLayoutParams);
 
-		@Override
-		public void onReceiveRefreshedAd(AdView adView) {
-			super.onReceiveRefreshedAd(adView);
-		}
+		RelativeLayout relativeLayout = new RelativeLayout(this);
+		relativeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		frameLayout.addView(relativeLayout, relativeLayoutParams);
+		textView = new TextView(this);
+		relativeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		relativeLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+		relativeLayout.addView(textView, relativeLayoutParams);
 
+		relativeLayout = new RelativeLayout(this);
+		relativeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		frameLayout.addView(relativeLayout, relativeLayoutParams);
+		adView = new AdView(this);
+		relativeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
+		relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+		relativeLayout.addView(adView, relativeLayoutParams);
+
+		setContentView(frameLayout);
 	}
 
-	public void onFailedToReceiveAd(AdView adView) {
+	void showAd() {
+		adView.setVisibility(View.VISIBLE);
+
+		// The ad will fade in over 0.4 seconds.
+		AlphaAnimation animation = new AlphaAnimation(0.0f, 1.0f);
+		animation.setDuration(400);
+		animation.setFillAfter(true);
+		animation.setInterpolator(new AccelerateInterpolator());
+		adView.startAnimation(animation);
+	}
+	
+	void hideAd() {
+		adView.setVisibility(View.GONE);
+		textView.setVisibility(View.GONE);
+	}
+	
+	public void showMainScreen(String text) {
+		adView.setVisibility(View.VISIBLE);
+		textView.setBackgroundColor(Color.DKGRAY);
+		textView.setText(text);
+		textView.setVisibility(View.VISIBLE);
+	}
+	
+	public void hideMainScreen() {
+		adView.setVisibility(View.GONE);
+		textView.setVisibility(View.GONE);
 	}
 
-	public void onFailedToReceiveRefreshedAd(AdView adView) {
-	}
-
-	public void onReceiveAd(AdView adView) {
-	}
-
-	public void onReceiveRefreshedAd(AdView adView) {
-	}
-
-	/* Creates the menu items */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, MENU_NEW_GAME1, 0, "Start game");
 		// menu.add(0, MENU_NEW_GAME2, 0, "Start 2 players game");
@@ -85,17 +122,17 @@ public class Game extends Activity implements AdListener {
 		return true;
 	}
 
-	/* Handles item selections */
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case MENU_NEW_GAME1:
-			gameView.gameThread.setState(GameThread.STATE_READY);
-			gameView.gameThread.newGame(adView);
+			gameThread.setState(GameThread.STATE_READY);
+			gameThread.newGame(adView);
 			return true;
-		/*case MENU_NEW_GAME2:
-			gameView.gameThread.setState(GameThread.STATE_READY);
-			gameView.gameThread.newGame(adView);
-			return true;*/
+			/*
+			 * case MENU_NEW_GAME2:
+			 * gameView.gameThread.setState(GameThread.STATE_READY);
+			 * gameView.gameThread.newGame(adView); return true;
+			 */
 		}
 		return false;
 	}

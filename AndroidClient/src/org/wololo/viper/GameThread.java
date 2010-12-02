@@ -5,36 +5,25 @@ import java.util.List;
 
 import orc.wololo.viper.Point;
 import orc.wololo.viper.Worm;
-
-import com.admob.android.ads.AdView;
-import com.admob.android.ads.SimpleAdListener;
-
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
 import android.graphics.Paint.Style;
+import android.graphics.Rect;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
 
-public class GameThread extends Thread implements SensorListener {
+import com.admob.android.ads.AdView;
+
+public class GameThread extends Thread implements SensorListener,SurfaceHolder.Callback {
 
 	public static final int STATE_UNINITIALIZED = 0;
 	public static final int STATE_LOSE = 1;
@@ -43,13 +32,13 @@ public class GameThread extends Thread implements SensorListener {
 	public static final int STATE_RUNNING = 4;
 	public static final int STATE_WIN = 5;
 
-	private AdView adView;
-
+	private SurfaceHolder surfaceHolder;
+	Game game;
 	Handler handler;
-
+	
+	PowerManager.WakeLock wakeLock;
 	SensorManager sensorManager;
 
-	SurfaceHolder surfaceHolder;
 	int canvasWidth;
 	int canvasHeight;
 	int canvasBoardOffsetX;
@@ -67,19 +56,18 @@ public class GameThread extends Thread implements SensorListener {
 
 	long lastTime;
 
-	Game game;
-
 	List<AndroidWorm> worms = new ArrayList<AndroidWorm>();
 
-	public GameThread(SurfaceHolder surfaceHolder, Context context, Handler handler) {
-		this.surfaceHolder = surfaceHolder;
+	public GameThread(Game game, Handler handler) {
+		this.game = game;
 		this.handler = handler;
+		
+		PowerManager powerManager = (PowerManager) game.getSystemService(Context.POWER_SERVICE);
+		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
 
-		sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-		sensorManager.registerListener(this, SensorManager.SENSOR_ORIENTATION, SensorManager.SENSOR_DELAY_GAME);
-
+		sensorManager = (SensorManager) game.getSystemService(Context.SENSOR_SERVICE);
 	}
-
+	
 	public void setSurfaceSize(int width, int height) {
 		synchronized (surfaceHolder) {
 			canvasWidth = width;
@@ -114,11 +102,7 @@ public class GameThread extends Thread implements SensorListener {
 	public void newGame(AdView adView) {
 		synchronized (surfaceHolder) {
 
-			Message msg = handler.obtainMessage();
-			Bundle data = new Bundle();
-			data.putInt("viz", View.GONE);
-			msg.setData(data);
-			handler.sendMessage(msg);
+			game.hideMainScreen();
 
 			// TODO more initial game state stuff..?
 			worms.clear();
@@ -141,7 +125,11 @@ public class GameThread extends Thread implements SensorListener {
 	}
 
 	@Override
-	public void run() {
+	public void run() {		
+		wakeLock.acquire();
+
+		sensorManager.registerListener(this, SensorManager.SENSOR_ORIENTATION, SensorManager.SENSOR_DELAY_GAME);
+		
 		while (running) {
 			Canvas canvas = null;
 			try {
@@ -150,15 +138,7 @@ public class GameThread extends Thread implements SensorListener {
 					if (state == STATE_RUNNING) {
 						timestep(canvas);
 					} else {
-						if (firstRun) {
-							Message msg = handler.obtainMessage();
-							Bundle data = new Bundle();
-							data.putInt("viz", View.VISIBLE);
-							msg.setData(data);
-							handler.sendMessage(msg);
-
-							firstRun = false;
-						}
+						//setRunning(false);
 					}
 				}
 			} finally {
@@ -170,6 +150,10 @@ public class GameThread extends Thread implements SensorListener {
 				}
 			}
 		}
+		
+		sensorManager.unregisterListener(this);
+		
+		wakeLock.release();
 	}
 
 	void collisionTest(Worm worm) {
@@ -198,6 +182,10 @@ public class GameThread extends Thread implements SensorListener {
 				worm.draw(boardCanvas);
 				collisionTest(worm);
 			}
+			else {
+				setState(STATE_LOSE);
+				//setRunning(false);
+			}
 		}
 
 		canvas.drawColor(Color.BLACK);
@@ -221,14 +209,11 @@ public class GameThread extends Thread implements SensorListener {
 
 	public void setState(int state) {
 		this.state = state;
-	}
-
-	public void setAdView(AdView ad) {
-		this.adView = ad;
-	}
-
-	public AdView getAd() {
-		return adView;
+		Message msg = handler.obtainMessage();
+		Bundle data = new Bundle();
+		data.putInt("state", state);
+		msg.setData(data);
+		handler.sendMessage(msg);
 	}
 
 	public void onSensorChanged(int sensor, float[] values) {
@@ -244,5 +229,32 @@ public class GameThread extends Thread implements SensorListener {
 	public void onAccuracyChanged(int sensor, int accuracy) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		// TODO: handle orientation changes better or lock orientation during game
+		this.setSurfaceSize(width, height);
+	}
+
+	public void surfaceCreated(SurfaceHolder holder) {
+		// start the thread here so that we don't busy-wait in run()
+		// waiting for the surface to be created
+		this.surfaceHolder = holder;
+		this.setRunning(true);
+		this.start();
+	}
+
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		// we have to tell thread to shut down & wait for it to finish, or else
+		// it might touch the Surface after we return and explode
+		boolean retry = true;
+		this.setRunning(false);
+		while (retry) {
+			try {
+				this.join();
+				retry = false;
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 }

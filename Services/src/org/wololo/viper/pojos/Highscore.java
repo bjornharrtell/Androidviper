@@ -19,6 +19,8 @@ public class Highscore {
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
     
+    private String userid;
+    
     @Persistent
     private String name;
 
@@ -31,8 +33,9 @@ public class Highscore {
     @Persistent
     private Blob picture;
 
-    public Highscore(String name, int score, Date date, Blob picture) {
+    public Highscore(String name, String userid, int score, Date date, Blob picture) {
         this.name = name;
+        this.userid = userid;
         this.score = score;
         this.date = date;
         this.picture = picture;
@@ -41,7 +44,11 @@ public class Highscore {
 	public String getName() {
 		return name;
 	}
-	
+
+	public String getUserid() {
+		return userid;
+	}
+
 	public int getScore() {
 		return score;
 	}

@@ -73,14 +73,26 @@ public class HighscoresResource extends AuthServerResource {
 			throws Exception {
 		JSONObject jsonObject = jsonRepresentation.getJsonObject();
 
-		Highscore highscore = new Highscore(jsonObject.getString("name"),
+		Highscore highscore = new Highscore(jsonObject.getString("name"), user.getUserId(),
 				jsonObject.getInt("score"), new Date(), null);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
+			Query query = pm.newQuery(Highscore.class);
+			query.setResult("min(score)");
+			query.setGrouping("userid");
+			query.setFilter("userid = " + user.getUserId());
+			int minScore = (Integer) query.execute();
+			
+			JSONObject response = new JSONObject();
+			
+			if (minScore>=highscore.getScore()) {
+				response.put("success", false);
+				return new JsonRepresentation(response);
+			}
+			
 			pm.makePersistent(highscore);
 
-			JSONObject response = new JSONObject();
 			response.put("success", true);
 			return new JsonRepresentation(response);
 		} finally {
