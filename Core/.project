@@ -3,6 +3,7 @@
 	<name>Core</name>
 	<comment></comment>
 	<projects>
+		<project>jts</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,18 +1,21 @@
 package org.wololo.viper;
 
-import android.graphics.Paint;
+import org.wololo.viper.GameThread;
+import org.wololo.viper.Worm;
+import org.wololo.viper.WormSegment;
+
 import android.graphics.Canvas;
-import orc.wololo.viper.Point;
-import orc.wololo.viper.Worm;
-import orc.wololo.viper.Wormsegment;
+import android.graphics.Paint;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 public class AndroidWorm extends Worm {
 
 	Paint paint;
 	Paint holePaint;
 	
-	public AndroidWorm(Point position, float direction, int color) {
-		super(position, direction, color);
+	public AndroidWorm(Coordinate position, double direction, int color, boolean aiControlled) {
+		super(position, direction, color, aiControlled);
 		
 		paint = new Paint();
 		paint.setColor(color);
@@ -30,21 +33,19 @@ public class AndroidWorm extends Worm {
 	 *            The Canvas to draw on
 	 */
 	public void draw(Canvas canvas) {
-		if (segments.size() < 1)
+		if (wormSegments < 1)
 			return;
-
-		Wormsegment wormsegment = segments.get(segments.size() - 1);
 
 		int width = canvas.getWidth();
 		int height = canvas.getHeight();
+		
+		WormSegment wormSegment = getCurrentWormSegment();
 
-		double[] points = wormsegment.asArray();
+		float startX = (float) (wormSegment.p0.x) * (width - 1);
+		float startY = (float) (wormSegment.p0.y/GameThread.heightFactor) * (height - 1);
+		float stopX = (float) (wormSegment.p1.x) * (width - 1);
+		float stopY = (float) (wormSegment.p1.y/GameThread.heightFactor) * (height - 1);
 
-		float startX = (float) points[0] * (width - 1);
-		float startY = (float) points[1] * (height - 1);
-		float stopX = (float) points[2] * (width - 1);
-		float stopY = (float) points[3] * (height - 1);
-
-		canvas.drawLine(startX, startY, stopX, stopY, wormsegment.isHole() ? holePaint : this.paint);
+		canvas.drawLine(startX, startY, stopX, stopY, wormSegment.isHole() ? holePaint : this.paint);
 	}
 }
