@@ -23,7 +23,7 @@ public class AndroidWorm extends Worm {
 		paint.setStrokeWidth(2);
 		
 		holePaint = new Paint(paint);
-		holePaint.setAlpha(50);
+		holePaint.setAlpha(75);
 	}
 
 	/**

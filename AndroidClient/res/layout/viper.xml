@@ -26,7 +26,7 @@
 				android:layout_height="wrap_content" android:gravity="center_horizontal"
 				android:textColor="#ffffff" android:layout_width="fill_parent"
 				android:id="@+id/TextViewTitle" android:paddingTop="120dp"
-				android:text="Viper 1.6.0 (c) Björn Harrtell" android:textSize="16sp"
+				android:text="Viper 1.6.3 (c) Björn Harrtell" android:textSize="16sp"
 				android:paddingBottom="10dp"></TextView>
 			<Button android:text="New Game" android:id="@+id/ButtonNewGame"
 				android:layout_height="wrap_content" android:layout_width="wrap_content"
@@ -39,7 +39,8 @@
 				android:textColor="#ffffff" android:layout_width="fill_parent"
 				android:id="@+id/TextViewTitle" android:paddingTop="10dp"
 				android:text="Control the white worm by carefully tilting the phone left and right, which will affect the worm rotation angle using the current worm direction as the frame of reference. Win points by going though holes."
-				android:textSize="12sp" android:paddingBottom="10dp" android:paddingLeft="10dp" android:paddingRight="10dp">
+				android:textSize="12sp" android:paddingBottom="10dp"
+				android:paddingLeft="10dp" android:paddingRight="10dp">
 			</TextView>
 		</LinearLayout>
 	</RelativeLayout>
