@@ -4,6 +4,7 @@ import org.wololo.viper.AndroidGameThread;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,6 +35,8 @@ public class ViperActivity extends Activity implements OnClickListener {
 
 	AlphaAnimation fadeIn;
 	AlphaAnimation fadeOut;
+	
+	MediaPlayer mediaPlayer;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -113,9 +116,15 @@ public class ViperActivity extends Activity implements OnClickListener {
 	public void showMainScreen() {
 		relativeLayoutMainMenu.startAnimation(fadeIn);
 		relativeLayoutMainMenu.setVisibility(View.VISIBLE);
+		
+		mediaPlayer = MediaPlayer.create(this, R.raw.background);
+		mediaPlayer.setLooping(true);
+		mediaPlayer.start();
 	}
 
 	public void hideMainScreen() {
+		mediaPlayer.stop();
+		
 		relativeLayoutMainMenu.startAnimation(fadeOut);
 		relativeLayoutMainMenu.setVisibility(View.INVISIBLE);
 	}
@@ -124,8 +133,10 @@ public class ViperActivity extends Activity implements OnClickListener {
 		if (v.getId() == buttonNewGame.getId()) {
 			hideMainScreen();
 			hideAd();
+			
 			gameThread.newGame();
 		} else {
+			mediaPlayer.stop();
 			finish();
 		}
 	}

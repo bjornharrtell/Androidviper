@@ -58,7 +58,9 @@ public class GameThread extends Thread {
 
 		for (Worm worm : worms) {
 			if (worm.alive) {
-				worm.move(elapsed);
+				if (worm.move(elapsed) == Worm.MOVEBOUNCE) {
+					onBounce();
+				}
 				collisionTest(worm);
 			} else if (worms.get(0) == worm) {
 				setState(STATE_LOSE);
@@ -78,6 +80,7 @@ public class GameThread extends Thread {
 
 			if (result == Worm.COLLISIONWORM) {
 				worm.alive = false;
+				onDeath();
 			} else if (result == Worm.COLLISIONHOLE) {
 				onScore(++worm.score);
 			}
@@ -86,5 +89,13 @@ public class GameThread extends Thread {
 
 	protected void onScore(int score) {
 
+	}
+	
+	protected void onDeath() {
+		
+	}
+	
+	protected void onBounce() {
+		
 	}
 }

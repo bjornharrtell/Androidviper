@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.wololo.viper.GameThread;
 import org.wololo.viper.Worm;
+import org.wololo.viper2.R;
 import org.wololo.viper2.ViperActivity;
 
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,8 +40,11 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 
 	boolean running = false;
 
+	Context context;
+
 	public AndroidGameThread(ViperActivity game, Handler handler) {
 		this.handler = handler;
+		this.context = game;
 
 		PowerManager powerManager = (PowerManager) game.getSystemService(Context.POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
@@ -61,11 +66,14 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 	}
 
 	public void newGame() {
+		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.load);
+		mediaPlayer.start();
+		
 		List<Worm> worms = new ArrayList<Worm>();
 		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.WHITE, false));
 		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.BLUE, true));
 		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.YELLOW, true));
-		
+
 		newGame(worms);
 	}
 
@@ -85,7 +93,6 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 				synchronized (surfaceHolder) {
 					if (state == STATE_READY) {
 						initBitmap();
-						onScore(0);
 						setState(STATE_RUNNING);
 					}
 					if (state == STATE_RUNNING) {
@@ -114,6 +121,45 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 		data.putInt("score", score);
 		msg.setData(data);
 		handler.sendMessage(msg);
+
+		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.thread);
+		mediaPlayer.start();
+	}
+
+	@Override
+	protected void onBounce() {
+		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.bounce);
+		mediaPlayer.start();
+	}
+	
+	@Override
+	protected void onDeath() {
+		int nr = (int) (Math.random() * 5);
+		int resource = R.raw.doh1;
+
+		switch (nr) {
+		case 0:
+			resource = R.raw.doh1;
+			break;
+		case 1:
+			resource = R.raw.doh2;
+			break;
+		case 2:
+			resource = R.raw.doh3;
+			break;
+		case 3:
+			resource = R.raw.doh4;
+			break;
+		case 4:
+			resource = R.raw.doh5;
+			break;
+		case 5:
+			resource = R.raw.doh6;
+			break;
+		}
+
+		MediaPlayer mediaPlayer = MediaPlayer.create(context, resource);
+		mediaPlayer.start();
 	}
 
 	void timestep(Canvas canvas) {
@@ -137,6 +183,17 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 		data.putInt("state", state);
 		msg.setData(data);
 		handler.sendMessage(msg);
+		
+		if (state == STATE_RUNNING) {
+			//MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.wohoo);
+			//mediaPlayer.start();
+		} else if (state == STATE_LOSE) {
+			MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.gameover);
+			mediaPlayer.start();
+		} else if (state == STATE_WIN) {
+			MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.gameover);
+			mediaPlayer.start();
+		}
 	}
 
 	public void onSensorChanged(int sensor, float[] values) {
@@ -148,7 +205,7 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 	}
 
 	public void onAccuracyChanged(int sensor, int accuracy) {
-		
+
 	}
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {

@@ -10,6 +10,9 @@ public class Worm {
 	public static final int NOCOLLISION = 0;
 	public static final int COLLISIONWORM = 1;
 	public static final int COLLISIONHOLE = 2;
+	
+	public static final int MOVENORMAL = 0;
+	public static final int MOVEBOUNCE = 1;
 
 	boolean aiControlled = false;
 	
@@ -54,12 +57,13 @@ public class Worm {
 		return newCoordinate;
 	}
 
-	public void move(long time) {
+	public int move(long time) {
 
 		direction += torque * time;
 
 		// precalc next move
 		boolean wallCollision = true;
+		boolean hasCollided = false;
 		double x = 0.0f, y = 0.0f, moveDistance = 0.0f;
 		while (wallCollision) {
 			// calc new potential position
@@ -73,11 +77,13 @@ public class Worm {
 			if ((x < 0.0f) || (x > 1.0f)) {
 				direction = Math.PI - direction;
 				wallCollision = true;
+				hasCollided = true;
 				continue;
 			}
 			if ((y < 0.0f) || (y > GameThread.heightFactor)) {
 				direction = -direction;
 				wallCollision = true;
+				hasCollided = true;
 				continue;
 			}
 
@@ -103,6 +109,12 @@ public class Worm {
 		// increase speed
 		distance += moveDistance;
 		velocity += 0.00000006;
+		
+		if (hasCollided) {
+			return MOVEBOUNCE;
+		} else {
+			return MOVENORMAL;
+		}
 	}
 
 	/**
