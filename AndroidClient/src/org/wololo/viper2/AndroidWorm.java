@@ -1,8 +1,8 @@
-package org.wololo.viper;
+package org.wololo.viper2;
 
-import org.wololo.viper.GameThread;
-import org.wololo.viper.Worm;
-import org.wololo.viper.WormSegment;
+import org.wololo.viper.core.GameThread;
+import org.wololo.viper.core.Worm;
+import org.wololo.viper.core.WormSegment;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;

@@ -1,4 +1,4 @@
-package org.wololo.viper;
+package org.wololo.viper.core;
 
 import java.util.ArrayList;
 import java.util.List;

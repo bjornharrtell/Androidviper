@@ -1,12 +1,11 @@
-package org.wololo.viper;
+package org.wololo.viper2;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.wololo.viper.GameThread;
-import org.wololo.viper.Worm;
+import org.wololo.viper.core.GameThread;
+import org.wololo.viper.core.Worm;
 import org.wololo.viper2.R;
-import org.wololo.viper2.ViperActivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;

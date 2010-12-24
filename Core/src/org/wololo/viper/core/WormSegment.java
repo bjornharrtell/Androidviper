@@ -1,4 +1,4 @@
-package org.wololo.viper;
+package org.wololo.viper.core;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;

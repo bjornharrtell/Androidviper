@@ -1,6 +1,6 @@
 package org.wololo.viper2;
 
-import org.wololo.viper.AndroidGameThread;
+import org.wololo.viper2.R;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
