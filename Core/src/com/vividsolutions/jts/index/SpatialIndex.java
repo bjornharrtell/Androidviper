@@ -33,8 +33,6 @@
  */
 package com.vividsolutions.jts.index;
 
-import java.util.List;
-
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -54,16 +52,6 @@ public interface SpatialIndex
    * Adds a spatial item with an extent specified by the given {@link Envelope} to the index
    */
   void insert(Envelope itemEnv, Object item);
-
-  /**
-   * Queries the index for all items whose extents intersect the given search {@link Envelope}
-   * Note that some kinds of indexes may also return objects which do not in fact
-   * intersect the query envelope.
-   *
-   * @param searchEnv the envelope to query for
-   * @return a list of the items found by the query
-   */
-  List query(Envelope searchEnv);
 
   /**
    * Queries the index for all items whose extents intersect the given search {@link Envelope},

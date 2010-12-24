@@ -246,10 +246,6 @@ public class RobustLineIntersector
 //      System.out.println("Snapped to " + intPt);
     }
 
-    if (precisionModel != null) {
-      precisionModel.makePrecise(intPt);
-    }
-
     return intPt;
   }
 
@@ -296,33 +292,6 @@ public class RobustLineIntersector
  //     System.out.println("Snapped to " + intPt);
     }
     return intPt;
-  }
-
-  /**
-   * Normalize the supplied coordinates so that
-   * their minimum ordinate values lie at the origin.
-   * NOTE: this normalization technique appears to cause
-   * large errors in the position of the intersection point for some cases.
-   *
-   * @param n1
-   * @param n2
-   * @param n3
-   * @param n4
-   * @param normPt
-   */
-  private void normalizeToMinimum(
-    Coordinate n1,
-    Coordinate n2,
-    Coordinate n3,
-    Coordinate n4,
-    Coordinate normPt)
-  {
-    normPt.x = smallestInAbsValue(n1.x, n2.x, n3.x, n4.x);
-    normPt.y = smallestInAbsValue(n1.y, n2.y, n3.y, n4.y);
-    n1.x -= normPt.x;    n1.y -= normPt.y;
-    n2.x -= normPt.x;    n2.y -= normPt.y;
-    n3.x -= normPt.x;    n3.y -= normPt.y;
-    n4.x -= normPt.x;    n4.y -= normPt.y;
   }
 
   /**
@@ -378,24 +347,6 @@ public class RobustLineIntersector
     n01.x -= normPt.x;    n01.y -= normPt.y;
     n10.x -= normPt.x;    n10.y -= normPt.y;
     n11.x -= normPt.x;    n11.y -= normPt.y;
-  }
-
-  private double smallestInAbsValue(double x1, double x2, double x3, double x4)
-  {
-    double x = x1;
-    double xabs = Math.abs(x);
-    if (Math.abs(x2) < xabs) {
-      x = x2;
-      xabs = Math.abs(x2);
-    }
-    if (Math.abs(x3) < xabs) {
-      x = x3;
-      xabs = Math.abs(x3);
-    }
-    if (Math.abs(x4) < xabs) {
-      x = x4;
-    }
-    return x;
   }
 
   /**

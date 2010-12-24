@@ -32,8 +32,7 @@
  */
 package com.vividsolutions.jts.geom;
 
-import java.io.Serializable;
-import java.util.Comparator;
+import java.awt.Point;
 
 
 /**
@@ -54,8 +53,7 @@ import java.util.Comparator;
  *
  *@version 1.7
  */
-public class Coordinate implements Comparable, Cloneable, Serializable {
-  private static final long serialVersionUID = 6683108902428366910L;
+public class Coordinate implements Comparable<Object>, Cloneable {
   
   /**
    * The value used to indicate a null or missing ordinate value.
@@ -194,29 +192,6 @@ public class Coordinate implements Comparable, Cloneable, Serializable {
     return 0;
   }
 
-  /**
-   *  Returns <code>true</code> if <code>other</code> has the same values for x,
-   *  y and z.
-   *
-   *@param  other  a <code>Coordinate</code> with which to do the 3D comparison.
-   *@return        <code>true</code> if <code>other</code> is a <code>Coordinate</code>
-   *      with the same values for x, y and z.
-   */
-  public boolean equals3D(Coordinate other) {
-    return (x == other.x) && (y == other.y) &&
-               ((z == other.z) ||
-               (Double.isNaN(z) && Double.isNaN(other.z)));
-  }
-
-  /**
-   *  Returns a <code>String</code> of the form <I>(x,y,z)</I> .
-   *
-   *@return    a <code>String</code> of the form <I>(x,y,z)</I>
-   */
-  public String toString() {
-    return "(" + x + ", " + y + ", " + z + ")";
-  }
-
   public Object clone() {
     try {
       Coordinate coord = (Coordinate) super.clone();
@@ -264,87 +239,6 @@ public class Coordinate implements Comparable, Cloneable, Serializable {
   public static int hashCode(double x) {
     long f = Double.doubleToLongBits(x);
     return (int)(f^(f>>>32));
-  }
-
-
-  /**
-   * Compares two {@link Coordinate}s, allowing for either a 2-dimensional
-   * or 3-dimensional comparison, and handling NaN values correctly.
-   */
-  public static class DimensionalComparator
-      implements Comparator
-  {
-    /**
-     * Compare two <code>double</code>s, allowing for NaN values.
-     * NaN is treated as being less than any valid number.
-     *
-     * @param a a <code>double</code>
-     * @param b a <code>double</code>
-     * @return -1, 0, or 1 depending on whether a is less than, equal to or greater than b
-     */
-    public static int compare(double a, double b)
-    {
-      if (a < b) return -1;
-      if (a > b) return 1;
-
-      if (Double.isNaN(a)) {
-        if (Double.isNaN(b)) return 0;
-        return -1;
-      }
-
-      if (Double.isNaN(b)) return 1;
-      return 0;
-    }
-
-    private int dimensionsToTest = 2;
-
-    /**
-     * Creates a comparator for 2 dimensional coordinates.
-     */
-    public DimensionalComparator()
-    {
-      this(2);
-    }
-
-    /**
-     * Creates a comparator for 2 or 3 dimensional coordinates, depending
-     * on the value provided.
-     *
-     * @param dimensionLimit the number of dimensions to test
-     */
-    public DimensionalComparator(int dimensionsToTest)
-    {
-      if (dimensionsToTest != 2 && dimensionsToTest != 3)
-        throw new IllegalArgumentException("only 2 or 3 dimensions may be specified");
-      this.dimensionsToTest = dimensionsToTest;
-    }
-
-    /**
-     * Compares two {@link Coordinate}s along to the number of
-     * dimensions specified.
-     *
-     * @param o1 a {@link Coordinate}
-     * @param o2 a {link Coordinate}
-     * @return -1, 0, or 1 depending on whether o1 is less than,
-     * equal to, or greater than 02
-     *
-     */
-    public int compare(Object o1, Object o2)
-    {
-      Coordinate c1 = (Coordinate) o1;
-      Coordinate c2 = (Coordinate) o2;
-
-      int compX = compare(c1.x, c2.x);
-      if (compX != 0) return compX;
-
-      int compY = compare(c1.y, c2.y);
-      if (compY != 0) return compY;
-
-      if (dimensionsToTest <= 2) return 0;
-
-      int compZ = compare(c1.z, c2.z);
-      return compZ;
-    }
   }
 
 }

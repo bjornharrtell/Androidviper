@@ -9,7 +9,7 @@ public class ArrayListVisitor
     implements ItemVisitor
 {
 
-  private ArrayList items = new ArrayList();
+  private ArrayList<Object> items = new ArrayList<Object>();
   public ArrayListVisitor() {
   }
 

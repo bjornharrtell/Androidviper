@@ -39,7 +39,6 @@ package com.vividsolutions.jts.algorithm;
  * @version 1.7
  */
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.PrecisionModel;
 
 /**
  * A LineIntersector is an algorithm that can both test whether
@@ -53,14 +52,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
  * @version 1.7
  */
 public abstract class LineIntersector 
-{
-/**
- * These are deprecated, due to ambiguous naming
- */
-  public final static int DONT_INTERSECT = 0;
-  public final static int DO_INTERSECT = 1;
-  public final static int COLLINEAR = 2;
-  
+{  
   /**
    * Indicates that line segments do not intersect
    */
@@ -128,21 +120,6 @@ public abstract class LineIntersector
     return dist;
   }
 
-  /**
-   * This function is non-robust, since it may compute the square of large numbers.
-   * Currently not sure how to improve this.
-   */
-  public static double nonRobustComputeEdgeDistance(
-        Coordinate p,
-        Coordinate p1,
-        Coordinate p2)
-  {
-    double dx = p.x - p1.x;
-    double dy = p.y - p1.y;
-    double dist = Math.sqrt(dx * dx + dy * dy);   // dummy value
-    return dist;
-  }
-
   protected int result;
   protected Coordinate[][] inputLines = new Coordinate[2][2];
   protected Coordinate[] intPt = new Coordinate[2];
@@ -152,42 +129,11 @@ public abstract class LineIntersector
    */
   protected int[][] intLineIndex;
   protected boolean isProper;
-  protected Coordinate pa;
-  protected Coordinate pb;
-  /**
-   * If makePrecise is true, computed intersection coordinates will be made precise
-   * using Coordinate#makePrecise
-   */
-  protected PrecisionModel precisionModel = null;
-//public int numIntersects = 0;
 
   public LineIntersector() {
     intPt[0] = new Coordinate();
     intPt[1] = new Coordinate();
-    // alias the intersection points for ease of reference
-    pa = intPt[0];
-    pb = intPt[1];
     result = 0;
-  }
-
-  /**
-   * Force computed intersection to be rounded to a given precision model
-   * @param precisionModel
-   * @deprecated use <code>setPrecisionModel</code> instead
-   */
-  public void setMakePrecise(PrecisionModel precisionModel)
-  {
-    this.precisionModel = precisionModel;
-  }
-
-  /**
-   * Force computed intersection to be rounded to a given precision model.
-   * No getter is provided, because the precision model is not required to be specified.
-   * @param precisionModel
-   */
-  public void setPrecisionModel(PrecisionModel precisionModel)
-  {
-    this.precisionModel = precisionModel;
   }
 
   /**
@@ -223,26 +169,6 @@ public abstract class LineIntersector
   protected abstract int computeIntersect(
                 Coordinate p1, Coordinate p2,
                 Coordinate q1, Coordinate q2);
-
-/*
-  public String toString() {
-    String str = inputLines[0][0] + "-"
-         + inputLines[0][1] + " "
-         + inputLines[1][0] + "-"
-         + inputLines[1][1] + " : "
-               + getTopologySummary();
-    return str;
-  }
-*/
-
-  private String getTopologySummary()
-  {
-    StringBuffer catBuf = new StringBuffer();
-    if (isEndPoint()) catBuf.append(" endpoint");
-    if (isProper) catBuf.append(" proper");
-    if (isCollinear()) catBuf.append(" collinear");
-    return catBuf.toString();
-  }
 
   protected boolean isEndPoint() {
     return hasIntersection() && !isProper;

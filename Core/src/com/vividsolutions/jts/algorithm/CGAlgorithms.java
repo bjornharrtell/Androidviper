@@ -33,7 +33,6 @@
 package com.vividsolutions.jts.algorithm;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Location;
 
 /**
  * Specifies and implements various fundamental Computational Geometric algorithms.
@@ -43,23 +42,6 @@ import com.vividsolutions.jts.geom.Location;
  */
 public class CGAlgorithms
 {
-
-  /**
-   * A value that indicates an orientation of clockwise, or a right turn.
-   */
-  public static final int CLOCKWISE     = -1;
-  public static final int RIGHT         = CLOCKWISE;
-  /**
-   * A value that indicates an orientation of counterclockwise, or a left turn.
-   */
-  public static final int COUNTERCLOCKWISE  = 1;
-  public static final int LEFT              = COUNTERCLOCKWISE;
-  /**
-   * A value that indicates an orientation of collinear, or no turn (straight).
-   */
-  public static final int COLLINEAR         = 0;
-  public static final int STRAIGHT          = COLLINEAR;
-
   /**
    * Returns the index of the direction of the point <code>q</code>
    * relative to a
@@ -86,122 +68,7 @@ public class CGAlgorithms
 
   public CGAlgorithms() {
   }
-
-  /**
-   * Tests whether a point lies on the line segments defined by a
-   * list of coordinates.
-   *
-   * @return true if the point is a vertex of the line 
-   * or lies in the interior of a line segment in the linestring
-   */
-  public static boolean isOnLine(Coordinate p, Coordinate[] pt) {
-    LineIntersector lineIntersector = new RobustLineIntersector();
-    for (int i = 1; i < pt.length; i++) {
-      Coordinate p0 = pt[i - 1];
-      Coordinate p1 = pt[i];
-      lineIntersector.computeIntersection(p, p0, p1);
-      if (lineIntersector.hasIntersection()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Computes whether a ring defined by an array of {@link Coordinate}s is
-   * oriented counter-clockwise.
-   * <ul>
-   * <li>The list of points is assumed to have the first and last points equal.
-   * <li>This will handle coordinate lists which contain repeated points.
-   * </ul>
-   * This algorithm is <b>only</b> guaranteed to work with valid rings.
-   * If the ring is invalid (e.g. self-crosses or touches),
-   * the computed result may not be correct.
-   *
-   * @param ring an array of Coordinates forming a ring
-   * @return true if the ring is oriented counter-clockwise.
-   * @throws IllegalArgumentException if there are too few points to determine orientation (< 3)
-   */
-  public static boolean isCCW(Coordinate[] ring) {
-    // # of points without closing endpoint
-    int nPts = ring.length - 1;
-    // sanity check
-    if (nPts < 3)
-    	throw new IllegalArgumentException("Ring has fewer than 3 points, so orientation cannot be determined");
-    
-    // find highest point
-    Coordinate hiPt = ring[0];
-    int hiIndex = 0;
-    for (int i = 1; i <= nPts; i++) {
-      Coordinate p = ring[i];
-      if (p.y > hiPt.y) {
-        hiPt = p;
-        hiIndex = i;
-      }
-    }
-
-    // find distinct point before highest point
-    int iPrev = hiIndex;
-    do {
-      iPrev = iPrev - 1;
-      if (iPrev < 0) iPrev = nPts;
-    } while (ring[iPrev].equals2D(hiPt) && iPrev != hiIndex);
-
-    // find distinct point after highest point
-    int iNext = hiIndex;
-    do {
-      iNext = (iNext + 1) % nPts;
-    } while (ring[iNext].equals2D(hiPt) && iNext != hiIndex);
-
-    Coordinate prev = ring[iPrev];
-    Coordinate next = ring[iNext];
-
-    /**
-     * This check catches cases where the ring contains an A-B-A configuration of points.
-     * This can happen if the ring does not contain 3 distinct points
-     * (including the case where the input array has fewer than 4 elements),
-     * or it contains coincident line segments.
-     */
-    if (prev.equals2D(hiPt) || next.equals2D(hiPt) || prev.equals2D(next))
-      return false;
-
-    int disc = computeOrientation(prev, hiPt, next);
-
-    /**
-     *  If disc is exactly 0, lines are collinear.  There are two possible cases:
-     *  (1) the lines lie along the x axis in opposite directions
-     *  (2) the lines lie on top of one another
-     *
-     *  (1) is handled by checking if next is left of prev ==> CCW
-     *  (2) will never happen if the ring is valid, so don't check for it
-     *  (Might want to assert this)
-     */
-    boolean isCCW = false;
-    if (disc == 0) {
-      // poly is CCW if prev x is right of next x
-      isCCW = (prev.x > next.x);
-    }
-    else {
-      // if area is positive, points are ordered CCW
-      isCCW = (disc > 0);
-    }
-    return isCCW;
-  }
-
-  /**
-   * Computes the orientation of a point q to the directed line segment p1-p2.
-   * The orientation of a point relative to a directed line segment indicates
-   * which way you turn to get to q after travelling from p1 to p2.
-   *
-   * @return 1 if q is counter-clockwise from p1-p2
-   * @return -1 if q is clockwise from p1-p2
-   * @return 0 if q is collinear with p1-p2
-   */
-  public static int computeOrientation(Coordinate p1, Coordinate p2, Coordinate q) {
-    return orientationIndex(p1, p2, q);
-  }
-
-
+  
   /**
    * Computes the distance from a point p to a line segment AB
    *
@@ -282,29 +149,6 @@ public class CGAlgorithms
       Math.abs(s) *
       Math.sqrt(((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y)));
   }
-
-  /**
-   * Computes the distance from a point to a sequence
-   * of line segments.
-   * 
-   * @param p a point
-   * @param line a sequence of contiguous line segments defined by their vertices
-   * @return the minimum distance between the point and the line segments
-   */
-	public static double distancePointLine(Coordinate p, Coordinate[] line)
-	{
-		if (line.length == 0) 
-			throw new IllegalArgumentException("Line array must contain at least one vertex");
-		// this handles the case of length = 1
-		double minDistance = p.distance(line[0]);
-		for (int i = 0; i < line.length - 1; i++) {
-			double dist = CGAlgorithms.distancePointLine(p, line[i], line[i+1]);
-			if (dist < minDistance) {
-				minDistance = dist;
-			}
-		}
-		return minDistance;
-	}
 	
   /**
    * Computes the distance from a line segment AB to a line segment CD
@@ -371,29 +215,6 @@ limiting conditions:
 	      distancePointLine(D,A,B)    ) ) );
     }
     return 0.0; //intersection exists
-  }
-
-  /**
-   * Computes the signed area for a ring.      
-   * The signed area is positive if
-   * the ring is oriented CW, negative if the ring is oriented CCW,
-   * and zero if the ring is degenerate or flat. 
-   * 
-   * @param ring the coordinates forming the ring
-   * @return the signed area of the ring
-   */
-  public static double signedArea(Coordinate[] ring)
-  {
-    if (ring.length < 3) return 0.0;
-    double sum = 0.0;
-    for (int i = 0; i < ring.length - 1; i++) {
-      double bx = ring[i].x;
-      double by = ring[i].y;
-      double cx = ring[i + 1].x;
-      double cy = ring[i + 1].y;
-      sum += (bx + cx) * (cy - by);
-    }
-    return -sum  / 2.0;
   }
   
 }

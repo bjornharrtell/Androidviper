@@ -77,7 +77,7 @@ public abstract class NodeBase {
     return subnodeIndex;
   }
 
-  protected List items = new ArrayList();
+  protected List<Object> items = new ArrayList<Object>();
 
   /**
    * subquads are numbered as follows:
@@ -92,15 +92,13 @@ public abstract class NodeBase {
   public NodeBase() {
   }
 
-  public List getItems() { return items; }
+  public List<Object> getItems() { return items; }
 
   public boolean hasItems() { return ! items.isEmpty(); }
 
   public void add(Object item)
   {
     items.add(item);
-//DEBUG itemCount++;
-//DEBUG System.out.print(itemCount);
   }
 
   /**
@@ -164,7 +162,7 @@ public abstract class NodeBase {
 
   //<<TODO:RENAME?>> Sounds like this method adds resultItems to items
   //(like List#addAll). Perhaps it should be renamed to "addAllItemsTo" [Jon Aquino]
-  public List addAllItems(List resultItems)
+  public List<Object> addAllItems(List<Object> resultItems)
   {
     // this node may have items as well as subnodes (since items may not
     // be wholely contained in any single subnode
@@ -178,7 +176,7 @@ public abstract class NodeBase {
   }
   protected abstract boolean isSearchMatch(Envelope searchEnv);
 
-  public void addAllItemsFromOverlapping(Envelope searchEnv, List resultItems)
+  public void addAllItemsFromOverlapping(Envelope searchEnv, List<Object> resultItems)
   {
     if (! isSearchMatch(searchEnv))
       return;
@@ -213,7 +211,7 @@ public abstract class NodeBase {
   private void visitItems(Envelope searchEnv, ItemVisitor visitor)
   {
     // would be nice to filter items based on search envelope, but can't until they contain an envelope
-    for (Iterator i = items.iterator(); i.hasNext(); ) {
+    for (Iterator<Object> i = items.iterator(); i.hasNext(); ) {
       visitor.visitItem(i.next());
     }
   }

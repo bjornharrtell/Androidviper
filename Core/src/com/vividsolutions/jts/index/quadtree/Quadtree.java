@@ -186,7 +186,7 @@ public class Quadtree
    * @param searchEnv the envelope of the desired query area.
    * @return a List of items which may intersect the search envelope
    */
-  public List query(Envelope searchEnv)
+  public List<?> query(Envelope searchEnv)
   {
     /**
      * the items that are matched are the items in quads which
@@ -222,9 +222,9 @@ public class Quadtree
   /**
    * Return a list of all items in the Quadtree
    */
-  public List queryAll()
+  public List<Object> queryAll()
   {
-    List foundItems = new ArrayList();
+    List<Object> foundItems = new ArrayList<Object>();
     root.addAllItems(foundItems);
     return foundItems;
   }

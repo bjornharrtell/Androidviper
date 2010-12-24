@@ -64,33 +64,6 @@ public class DoubleBits {
     return db.getExponent();
   }
 
-  public static double truncateToPowerOfTwo(double d)
-  {
-    DoubleBits db = new DoubleBits(d);
-    db.zeroLowerBits(52);
-    return db.getDouble();
-  }
-
-  public static String toBinaryString(double d)
-  {
-    DoubleBits db = new DoubleBits(d);
-    return db.toString();
-  }
-
-  public static double maximumCommonMantissa(double d1, double d2)
-  {
-    if (d1 == 0.0 || d2 == 0.0) return 0.0;
-
-    DoubleBits db1 = new DoubleBits(d1);
-    DoubleBits db2 = new DoubleBits(d2);
-
-    if (db1.getExponent() != db2.getExponent()) return 0.0;
-
-    int maxCommon = db1.numCommonMantissaBits(db2);
-    db1.zeroLowerBits(64 - (12 + maxCommon));
-    return db1.getDouble();
-  }
-
   private double x;
   private long xBits;
 
@@ -123,36 +96,10 @@ public class DoubleBits {
     return biasedExponent() - EXPONENT_BIAS;
   }
 
-  public void zeroLowerBits(int nBits)
-  {
-    long invMask = (1L << nBits) - 1L;
-    long mask = ~ invMask;
-    xBits &= mask;
-  }
-
   public int getBit(int i)
   {
     long mask = (1L << i);
     return (xBits & mask) != 0 ? 1 : 0;
-  }
-
-  /**
-   * This computes the number of common most-significant bits in the mantissa.
-   * It does not count the hidden bit, which is always 1.
-   * It does not determine whether the numbers have the same exponent - if they do
-   * not, the value computed by this function is meaningless.
-   * @param db
-   * @return the number of common most-significant mantissa bits
-   */
-  public int numCommonMantissaBits(DoubleBits db)
-  {
-    for (int i = 0; i < 52; i++)
-    {
-      int bitIndex = i + 12;
-      if (getBit(i) != db.getBit(i))
-        return i;
-    }
-    return 52;
   }
 
   /**

@@ -24,16 +24,12 @@ public class LineSegmentIndex {
 		index.insert(new Envelope(seg.p0, seg.p1), seg);
 	}
 
-	public void remove(LineSegment seg) {
-		index.remove(new Envelope(seg.p0, seg.p1), seg);
-	}
-
-	public List query(LineSegment querySeg) {
+	public List<LineSegment> query(LineSegment querySeg) {
 		Envelope env = new Envelope(querySeg.p0, querySeg.p1);
 
 		LineSegmentVisitor visitor = new LineSegmentVisitor(querySeg);
 		index.query(env, visitor);
-		List itemsFound = visitor.getItems();
+		List<LineSegment> itemsFound = visitor.getItems();
 
 		return itemsFound;
 	}
@@ -46,7 +42,7 @@ class LineSegmentVisitor implements ItemVisitor {
 	// MD - only seems to make about a 10% difference in overall time.
 
 	private LineSegment querySeg;
-	private ArrayList items = new ArrayList();
+	private List<LineSegment> items = new ArrayList<LineSegment>();
 
 	public LineSegmentVisitor(LineSegment querySeg) {
 		this.querySeg = querySeg;
@@ -55,10 +51,10 @@ class LineSegmentVisitor implements ItemVisitor {
 	public void visitItem(Object item) {
 		LineSegment seg = (LineSegment) item;
 		if (Envelope.intersects(seg.p0, seg.p1, querySeg.p0, querySeg.p1))
-			items.add(item);
+			items.add(seg);
 	}
 
-	public ArrayList getItems() {
+	public List<LineSegment> getItems() {
 		return items;
 	}
 }
