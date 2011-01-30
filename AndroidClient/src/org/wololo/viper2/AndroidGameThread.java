@@ -67,7 +67,7 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 	public void newGame() {
 		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.load);
 		mediaPlayer.start();
-		
+
 		List<Worm> worms = new ArrayList<Worm>();
 		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.WHITE, false));
 		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.BLUE, true));
@@ -130,7 +130,7 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.bounce);
 		mediaPlayer.start();
 	}
-	
+
 	@Override
 	protected void onDeath() {
 		int nr = (int) (Math.random() * 5);
@@ -182,10 +182,11 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 		data.putInt("state", state);
 		msg.setData(data);
 		handler.sendMessage(msg);
-		
+
 		if (state == STATE_RUNNING) {
-			//MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.wohoo);
-			//mediaPlayer.start();
+			// MediaPlayer mediaPlayer = MediaPlayer.create(context,
+			// R.raw.wohoo);
+			// mediaPlayer.start();
 		} else if (state == STATE_LOSE) {
 			MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.gameover);
 			mediaPlayer.start();
@@ -198,7 +199,13 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 	public void onSensorChanged(int sensor, float[] values) {
 		if (sensor == SensorManager.SENSOR_ORIENTATION) {
 			if (worms.size() > 0) {
-				worms.get(0).torque = ((Math.PI / 180) * values[2]) / 100;
+				double degrees = values[2];
+				degrees = Math.pow(Math.abs(degrees), 0.75);
+				double radians = (Math.PI / 180) * degrees;
+				double torque = radians / 100;
+				if (values[2] < 0)
+					torque = -torque;
+				worms.get(0).torque = torque;
 			}
 		}
 	}
