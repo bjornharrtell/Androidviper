@@ -12,8 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,13 +19,12 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.view.SurfaceHolder;
 
-public class AndroidGameThread extends GameThread implements SensorListener, SurfaceHolder.Callback {
+public class AndroidGameThread extends GameThread implements SurfaceHolder.Callback {
 
 	private SurfaceHolder surfaceHolder;
 	Handler handler;
 
 	PowerManager.WakeLock wakeLock;
-	SensorManager sensorManager;
 
 	int canvasWidth;
 	int canvasHeight;
@@ -47,8 +44,6 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 
 		PowerManager powerManager = (PowerManager) game.getSystemService(Context.POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
-
-		sensorManager = (SensorManager) game.getSystemService(Context.SENSOR_SERVICE);
 	}
 
 	public void setSurfaceSize(int width, int height) {
@@ -83,8 +78,6 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 	public void run() {
 		wakeLock.acquire();
 
-		sensorManager.registerListener(this, SensorManager.SENSOR_ORIENTATION, SensorManager.SENSOR_DELAY_FASTEST);
-
 		while (running) {
 			Canvas canvas = null;
 			try {
@@ -107,8 +100,6 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 				}
 			}
 		}
-
-		sensorManager.unregisterListener(this);
 
 		wakeLock.release();
 	}
@@ -196,23 +187,10 @@ public class AndroidGameThread extends GameThread implements SensorListener, Sur
 		}
 	}
 
-	public void onSensorChanged(int sensor, float[] values) {
-		if (sensor == SensorManager.SENSOR_ORIENTATION) {
-			if (worms.size() > 0) {
-				double degrees = values[2];
-				degrees = Math.pow(Math.abs(degrees), 0.75);
-				double radians = (Math.PI / 180) * degrees;
-				double torque = radians / 100;
-				if (values[2] < 0)
-					torque = -torque;
-				worms.get(0).torque = torque;
-			}
-		}
+	public void changeTorque(float torque) {
+		worms.get(0).torque = torque;
 	}
 
-	public void onAccuracyChanged(int sensor, int accuracy) {
-
-	}
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		this.setSurfaceSize(width, height);

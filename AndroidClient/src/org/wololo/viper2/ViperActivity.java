@@ -16,14 +16,12 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import com.admob.android.ads.AdView;
-import com.admob.android.ads.SimpleAdListener;
-
-public class ViperActivity extends Activity implements OnClickListener {
+public class ViperActivity extends Activity implements OnClickListener, OnSeekBarChangeListener {
 	SurfaceView surfaceView;
-	AdView adView;
 
 	RelativeLayout relativeLayoutMainMenu;
 	Button buttonNewGame;
@@ -31,17 +29,19 @@ public class ViperActivity extends Activity implements OnClickListener {
 	TextView textViewTitle;
 	TextView textViewScore;
 
+	SeekBar seekBar;
+
 	AndroidGameThread gameThread;
 
 	AlphaAnimation fadeIn;
 	AlphaAnimation fadeOut;
-	
+
 	MediaPlayer mediaPlayer;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -56,8 +56,7 @@ public class ViperActivity extends Activity implements OnClickListener {
 		fadeOut.setInterpolator(new AccelerateInterpolator());
 
 		setContentView(R.layout.viper);
-		surfaceView = (SurfaceView) findViewById(R.id.SurfaceView01);
-		adView = (AdView) findViewById(R.id.AdView);
+		surfaceView = (SurfaceView) findViewById(R.id.SurfaceView);
 
 		relativeLayoutMainMenu = (RelativeLayout) findViewById(R.id.RelativeLayoutMainMenu);
 		buttonNewGame = (Button) findViewById(R.id.ButtonNewGame);
@@ -66,7 +65,11 @@ public class ViperActivity extends Activity implements OnClickListener {
 		buttonQuit.setOnClickListener(this);
 		textViewTitle = (TextView) findViewById(R.id.TextViewTitle);
 		textViewScore = (TextView) findViewById(R.id.TextViewScore);
-		
+
+		seekBar = (SeekBar) findViewById(R.id.seekBar);
+		seekBar.setVisibility(View.GONE);
+		seekBar.setOnSeekBarChangeListener(this);
+
 		gameThread = new AndroidGameThread(this, new Handler() {
 			@Override
 			public void handleMessage(Message m) {
@@ -78,45 +81,31 @@ public class ViperActivity extends Activity implements OnClickListener {
 				} else if (data.containsKey("score")) {
 					int score = data.getInt("score");
 					handleScoreChange(score);
-				}	
+				}
 			}
 		});
 		surfaceView.getHolder().addCallback(gameThread);
 
-		adView.setAdListener(new SimpleAdListener());
-
 		showMainScreen();
-		showAd();
 	}
 
 	void handleStateChange(int state) {
 		if (state == AndroidGameThread.STATE_LOSE) {
 			showMainScreen();
-			showAd();
 		} else if (state == AndroidGameThread.STATE_RUNNING) {
-			//hideMainScreen();
-			//hideAd();
+			// hideMainScreen();
 		}
 	};
-	
+
 	void handleScoreChange(int score) {
-		textViewScore.setText("Score " + score);
+		textViewScore.setText("Score: " + score);
 	};
-
-	void showAd() {
-		adView.startAnimation(fadeIn);
-		adView.setVisibility(View.VISIBLE);
-	}
-
-	void hideAd() {
-		adView.startAnimation(fadeOut);
-		adView.setVisibility(View.INVISIBLE);
-	}
 
 	public void showMainScreen() {
 		relativeLayoutMainMenu.startAnimation(fadeIn);
 		relativeLayoutMainMenu.setVisibility(View.VISIBLE);
-		
+		seekBar.setVisibility(View.GONE);
+
 		mediaPlayer = MediaPlayer.create(this, R.raw.background);
 		mediaPlayer.setLooping(true);
 		mediaPlayer.start();
@@ -124,20 +113,34 @@ public class ViperActivity extends Activity implements OnClickListener {
 
 	public void hideMainScreen() {
 		mediaPlayer.stop();
-		
+
 		relativeLayoutMainMenu.startAnimation(fadeOut);
 		relativeLayoutMainMenu.setVisibility(View.INVISIBLE);
+		seekBar.setVisibility(View.VISIBLE);
 	}
 
 	public void onClick(View v) {
 		if (v.getId() == buttonNewGame.getId()) {
 			hideMainScreen();
-			hideAd();
-			
+
+			textViewScore.setText("Score: " + 0);
+			seekBar.setProgress(50);
 			gameThread.newGame();
 		} else {
 			mediaPlayer.stop();
 			finish();
 		}
+	}
+
+	public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
+		float torque = (arg1 - 50) / 20000.0f;
+
+		gameThread.changeTorque(torque);
+	}
+
+	public void onStartTrackingTouch(SeekBar arg0) {
+	}
+
+	public void onStopTrackingTouch(SeekBar arg0) {
 	}
 }

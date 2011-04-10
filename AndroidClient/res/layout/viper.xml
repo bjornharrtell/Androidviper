@@ -4,17 +4,11 @@
 
 	<RelativeLayout android:id="@+id/RelativeLayoutSurfaceView"
 		android:layout_width="fill_parent" android:layout_height="fill_parent">
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			android:layout_width="fill_parent" android:layout_height="fill_parent"
-			android:orientation="vertical">
-			<TextView android:layout_height="wrap_content"
-				android:gravity="center_horizontal" android:textColor="#ffffff"
-				android:layout_width="fill_parent" android:id="@+id/TextViewScore"
-				android:text="" android:textSize="12sp" android:background="#666666"></TextView>
-			<SurfaceView android:layout_width="fill_parent"
-				android:layout_height="fill_parent" android:id="@+id/SurfaceView01"></SurfaceView>
+		<LinearLayout android:id="@+id/linearLayout1" android:layout_height="fill_parent" android:layout_width="fill_parent" android:orientation="vertical">
+			<SurfaceView android:layout_width="fill_parent" android:id="@+id/SurfaceView" android:layout_height="fill_parent" android:layout_weight="1"></SurfaceView>
+			<SeekBar android:progress="50" android:id="@+id/seekBar" android:max="100" android:layout_width="fill_parent" android:layout_height="wrap_content"></SeekBar>
 		</LinearLayout>
-
+		<TextView android:text="Score: 0" android:paddingRight="10sp" android:textColor="#ffffff" android:textSize="12sp" android:gravity="center_horizontal" android:id="@+id/TextViewScore" android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_alignParentRight="true"></TextView>
 	</RelativeLayout>
 
 	<RelativeLayout android:id="@+id/RelativeLayoutMainMenu"
@@ -26,7 +20,7 @@
 				android:layout_height="wrap_content" android:gravity="center_horizontal"
 				android:textColor="#ffffff" android:layout_width="fill_parent"
 				android:id="@+id/TextViewTitle" android:paddingTop="120dp"
-				android:text="Viper II 1.7.3 (c) Björn Harrtell" android:textSize="16sp"
+				android:text="Viper II 1.8.1 (c) Björn Harrtell" android:textSize="16sp"
 				android:paddingBottom="10dp"></TextView>
 			<Button android:text="New Game" android:id="@+id/ButtonNewGame"
 				android:layout_height="wrap_content" android:layout_width="wrap_content"
@@ -38,18 +32,11 @@
 				android:layout_height="wrap_content" android:gravity="center_horizontal"
 				android:textColor="#ffffff" android:layout_width="fill_parent"
 				android:id="@+id/TextViewTitle" android:paddingTop="10dp"
-				android:text="Control the white worm by carefully tilting the phone left and right, which will affect the worm rotation angle using the current worm direction as the frame of reference. Win points by going though holes."
+				android:text="Control the white worm by dragging the bar at the bottom of the screen. Note that the worm angle is controlled with the current direction as the frame of reference. Win points by going though holes."
 				android:textSize="12sp" android:paddingBottom="10dp"
 				android:paddingLeft="10dp" android:paddingRight="10dp">
 			</TextView>
 		</LinearLayout>
-	</RelativeLayout>
-
-	<RelativeLayout android:id="@+id/RelativeLayoutAdView"
-		android:layout_width="fill_parent" android:layout_height="fill_parent">
-		<com.admob.android.ads.AdView android:id="@+id/AdView"
-			android:layout_width="fill_parent" android:layout_height="wrap_content"
-			android:background="#777777" />
 	</RelativeLayout>
 
 </FrameLayout>
