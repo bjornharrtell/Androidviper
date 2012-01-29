@@ -2,6 +2,7 @@ package org.wololo.viper.core;
 
 import java.util.List;
 
+import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.simplify.LineSegmentIndex;
 
@@ -10,16 +11,18 @@ public class Worm {
 	public static final int NOCOLLISION = 0;
 	public static final int COLLISIONWORM = 1;
 	public static final int COLLISIONHOLE = 2;
-	
+
 	public static final int MOVENORMAL = 0;
 	public static final int MOVEBOUNCE = 1;
 
+	public GameThread gameThread;
+
 	boolean aiControlled = false;
-	
+
 	public boolean alive = true;
 	int score = 0;
 
-	double velocity = 0.00005f;
+	public double velocity = 0.00005f;
 	public double torque = 0.0f;
 	double direction = 0.0f;
 	double distance = 0.0f;
@@ -31,16 +34,18 @@ public class Worm {
 
 	WormSegment[] wormSegmentCache = new WormSegment[3];
 	LineSegmentIndex lineSegmentIndex = new LineSegmentIndex();
-	
+
 	WormAI wormAI;
 
 	protected int wormSegments = 0;
 
-	public Worm(Coordinate coordinate, double direction, int color, boolean aiControlled) {
+	public Worm(GameThread gameThread, Coordinate coordinate, double direction,
+			int color, boolean aiControlled) {
+		this.gameThread = gameThread;
 		this.coordinate = coordinate;
 		this.direction = direction;
 		this.aiControlled = aiControlled;
-		
+
 		if (aiControlled) {
 			wormAI = new WormAI(this);
 		}
@@ -80,7 +85,7 @@ public class Worm {
 				hasCollided = true;
 				continue;
 			}
-			if ((y < 0.0f) || (y > GameThread.heightFactor)) {
+			if ((y < 0.0f) || (y > gameThread.heightFactor)) {
 				direction = -direction;
 				wallCollision = true;
 				hasCollided = true;
@@ -100,8 +105,8 @@ public class Worm {
 			wormSegmentCache[2] = wormSegmentCache[1];
 		if (wormSegmentCache[0] != null)
 			wormSegmentCache[1] = wormSegmentCache[0];
-		wormSegmentCache[0] = new WormSegment(previousCoordinate.x, previousCoordinate.y, coordinate.x, coordinate.y,
-				recordHole());
+		wormSegmentCache[0] = new WormSegment(previousCoordinate.x,
+				previousCoordinate.y, coordinate.x, coordinate.y, recordHole());
 		if (wormSegmentCache[2] != null)
 			lineSegmentIndex.add(wormSegmentCache[2]);
 		wormSegments++;
@@ -109,7 +114,7 @@ public class Worm {
 		// increase speed
 		distance += moveDistance;
 		velocity += 0.00000006;
-		
+
 		if (hasCollided) {
 			return MOVEBOUNCE;
 		} else {
@@ -128,14 +133,16 @@ public class Worm {
 		double holeLengthFactor = 6;
 		// calc hole length to make it longer as the velocity increases
 		// double holeLength = 0.1; //
-		double holeLength = holeInterval / (holeLengthFactor * (1.0 - ((velocity - 0.00005) * 3500.0)));
+		double holeLength = holeInterval
+				/ (holeLengthFactor * (1.0 - ((velocity - 0.00005) * 3500.0)));
 
 		if ((distance > (holeDistance + holeInterval)) && (hole == false)) {
 			hole = true;
 			holes++;
 		}
 
-		if ((distance > (holeDistance + holeInterval + holeLength)) && (hole == true)) {
+		if ((distance > (holeDistance + holeInterval + holeLength))
+				&& (hole == true)) {
 			hole = false;
 			holeDistance = distance;
 		}
@@ -153,17 +160,20 @@ public class Worm {
 
 		List<?> intersectingLineSegments = lineSegmentIndex.query(wormSegment);
 
-		if (intersectingLineSegments.isEmpty()) {
-			return NOCOLLISION;
+		for (Object intersectingLineSegment : intersectingLineSegments) {
+			WormSegment intersectingWormSegment = (WormSegment) intersectingLineSegment;
+			RobustLineIntersector rli = new RobustLineIntersector();
+			rli.computeIntersection(wormSegment.p0, wormSegment.p1,
+					intersectingWormSegment.p0, intersectingWormSegment.p1);
+			if (rli.hasIntersection()) {
+				if (intersectingWormSegment.hole)
+					return COLLISIONHOLE;
+				else
+					return COLLISIONWORM;
+			}
 		}
 
-		WormSegment intersectingWormSegment = (WormSegment) intersectingLineSegments.get(0);
-
-		if (intersectingWormSegment.hole) {
-			return COLLISIONHOLE;
-		} else {
-			return COLLISIONWORM;
-		}
+		return NOCOLLISION;
 	}
 
 	public WormSegment getCurrentWormSegment() {

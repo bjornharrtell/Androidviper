@@ -5,26 +5,26 @@ import java.util.List;
 
 import org.wololo.viper.core.GameThread;
 import org.wololo.viper.core.Worm;
-import org.wololo.viper2.R;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
-public class AndroidGameThread extends GameThread implements SurfaceHolder.Callback {
+public class AndroidGameThread extends GameThread implements SurfaceHolder.Callback, Handler.Callback {
 
 	private SurfaceHolder surfaceHolder;
 	Handler handler;
+	Handler handlerGUI;
 
-	PowerManager.WakeLock wakeLock;
+	private final PowerManager.WakeLock wakeLock;
 
 	int canvasWidth;
 	int canvasHeight;
@@ -38,35 +38,67 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 
 	Context context;
 
-	public AndroidGameThread(ViperActivity game, Handler handler) {
-		this.handler = handler;
-		this.context = game;
+	public AndroidGameThread(Context context, Handler handlerGUI) {
+		this.handlerGUI = handlerGUI;
+		this.handler = new Handler(this);
+		this.context = context;
 
-		PowerManager powerManager = (PowerManager) game.getSystemService(Context.POWER_SERVICE);
+		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
+	}
+
+	public boolean handleMessage(Message m) {
+		Bundle data = m.getData();
+
+		int action = data.getInt("action");
+
+		if (worms.size() > 0) {
+			Worm worm = worms.get(0);
+
+			if (action == MotionEvent.ACTION_CANCEL) {
+				worm.torque = 0;
+
+			} else if (action == MotionEvent.ACTION_UP) {
+				worm.torque = 0;
+
+			} else if (action == MotionEvent.ACTION_DOWN) {
+				float x = data.getFloat("x");
+
+				if (x < (canvasWidth / 2)) {
+					worm.torque = -0.0015 - worm.velocity;
+				} else {
+					worm.torque = 0.0015 - worm.velocity;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	public void setSurfaceSize(int width, int height) {
 		canvasWidth = width;
 		canvasHeight = height;
 
-		GameThread.heightFactor = canvasHeight / canvasWidth;
+		heightFactor = (float) canvasHeight / canvasWidth;
 	}
 
 	public void initBitmap() {
+		heightFactor = (float) canvasHeight / canvasWidth;
+
 		boardBitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Config.ARGB_8888);
 		boardBitmap.eraseColor(Color.BLACK);
 		boardCanvas = new Canvas(boardBitmap);
 	}
 
 	public void newGame() {
-		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.load);
-		mediaPlayer.start();
+
+		ViperActivity.playSound(ViperActivity.SOUND_LOAD);
 
 		List<Worm> worms = new ArrayList<Worm>();
-		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.WHITE, false));
-		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.BLUE, true));
-		worms.add(new AndroidWorm(getRandomStartCoordinate(), getRandomStartDirection(), Color.YELLOW, true));
+		worms.add(new AndroidWorm(this, getRandomStartCoordinate(), getRandomStartDirection(), Color.WHITE, false));
+		worms.get(0).torque = 0;
+		worms.add(new AndroidWorm(this, getRandomStartCoordinate(), getRandomStartDirection(), Color.BLUE, true));
+		worms.add(new AndroidWorm(this, getRandomStartCoordinate(), getRandomStartDirection(), Color.YELLOW, true));
 
 		newGame(worms);
 	}
@@ -105,51 +137,49 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 	}
 
 	@Override
-	protected void onScore(int score) {
-		Message msg = handler.obtainMessage();
+	protected void onScore(int score, boolean sound) {
+		Message msg = handlerGUI.obtainMessage();
 		Bundle data = new Bundle();
 		data.putInt("score", score);
 		msg.setData(data);
-		handler.sendMessage(msg);
+		handlerGUI.sendMessage(msg);
 
-		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.thread);
-		mediaPlayer.start();
+		if (sound)
+			ViperActivity.playSound(ViperActivity.SOUND_THREAD);
 	}
 
 	@Override
 	protected void onBounce() {
-		MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.bounce);
-		mediaPlayer.start();
+		ViperActivity.playSound(ViperActivity.SOUND_BOUNCE);
 	}
 
 	@Override
 	protected void onDeath() {
 		int nr = (int) (Math.random() * 5);
-		int resource = R.raw.doh1;
+		int id = ViperActivity.SOUND_DOH1;
 
 		switch (nr) {
 		case 0:
-			resource = R.raw.doh1;
+			id = ViperActivity.SOUND_DOH1;
 			break;
 		case 1:
-			resource = R.raw.doh2;
+			id = ViperActivity.SOUND_DOH2;
 			break;
 		case 2:
-			resource = R.raw.doh3;
+			id = ViperActivity.SOUND_DOH3;
 			break;
 		case 3:
-			resource = R.raw.doh4;
+			id = ViperActivity.SOUND_DOH4;
 			break;
 		case 4:
-			resource = R.raw.doh5;
+			id = ViperActivity.SOUND_DOH5;
 			break;
 		case 5:
-			resource = R.raw.doh6;
+			id = ViperActivity.SOUND_DOH6;
 			break;
 		}
 
-		MediaPlayer mediaPlayer = MediaPlayer.create(context, resource);
-		mediaPlayer.start();
+		ViperActivity.playSound(id);
 	}
 
 	void timestep(Canvas canvas) {
@@ -165,32 +195,26 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 		canvas.drawBitmap(boardBitmap, 0, 0, null);
 	}
 
+	@Override
 	public void setState(int state) {
 		super.setState(state);
 
-		Message msg = handler.obtainMessage();
+		Message msg = handlerGUI.obtainMessage();
 		Bundle data = new Bundle();
 		data.putInt("state", state);
 		msg.setData(data);
-		handler.sendMessage(msg);
+		handlerGUI.sendMessage(msg);
 
 		if (state == STATE_RUNNING) {
 			// MediaPlayer mediaPlayer = MediaPlayer.create(context,
 			// R.raw.wohoo);
 			// mediaPlayer.start();
 		} else if (state == STATE_LOSE) {
-			MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.gameover);
-			mediaPlayer.start();
+			ViperActivity.playSound(ViperActivity.SOUND_GAMEOVER);
 		} else if (state == STATE_WIN) {
-			MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.gameover);
-			mediaPlayer.start();
+			ViperActivity.playSound(ViperActivity.SOUND_GAMEOVER);
 		}
 	}
-
-	public void changeTorque(float torque) {
-		worms.get(0).torque = torque;
-	}
-
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		this.setSurfaceSize(width, height);

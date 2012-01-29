@@ -5,19 +5,20 @@ import java.util.ArrayList;
 /**
  * @version 1.7
  */
-public class ArrayListVisitor
-    implements ItemVisitor
-{
+public class ArrayListVisitor implements ItemVisitor {
 
-  private ArrayList<Object> items = new ArrayList<Object>();
-  public ArrayListVisitor() {
-  }
+	private ArrayList<Object> items = new ArrayList<Object>();
 
-  public void visitItem(Object item)
-  {
-    items.add(item);
-  }
+	public ArrayListVisitor() {
+	}
 
-  public ArrayList<Object> getItems() { return items; }
+	@Override
+	public void visitItem(Object item) {
+		items.add(item);
+	}
+
+	public ArrayList<Object> getItems() {
+		return items;
+	}
 
 }

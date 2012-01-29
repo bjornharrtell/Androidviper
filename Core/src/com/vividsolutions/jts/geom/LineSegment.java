@@ -1,4 +1,3 @@
-
 /*
  * The JTS Topology Suite is a collection of Java classes that implement the
  * fundamental operations required to validate a given geo-spatial data set to a
@@ -255,7 +254,8 @@ public class LineSegment implements Comparable<Object> {
 	 * @throws IllegalStateException
 	 *             if the segment has zero length
 	 */
-	public Coordinate pointAlongOffset(double segmentLengthFraction, double offsetDistance) {
+	public Coordinate pointAlongOffset(double segmentLengthFraction,
+			double offsetDistance) {
 		// the point on the segment line
 		double segx = p0.x + segmentLengthFraction * (p1.x - p0.x);
 		double segy = p0.y + segmentLengthFraction * (p1.y - p0.y);
@@ -267,7 +267,8 @@ public class LineSegment implements Comparable<Object> {
 		double uy = 0.0;
 		if (offsetDistance != 0.0) {
 			if (len <= 0.0)
-				throw new IllegalStateException("Cannot compute offset from zero-length line segment");
+				throw new IllegalStateException(
+						"Cannot compute offset from zero-length line segment");
 
 			// u is the vector that is the length of the offset, in the
 			// direction of the segment
@@ -305,16 +306,11 @@ public class LineSegment implements Comparable<Object> {
 			return 1.0;
 		// Otherwise, use comp.graphics.algorithms Frequently Asked Questions
 		// method
-		/*     	      AC dot AB
-		               r = ---------
-		                     ||AB||^2
-		            r has the following meaning:
-		            r=0 P = A
-		            r=1 P = B
-		            r<0 P is on the backward extension of AB
-		            r>1 P is on the forward extension of AB
-		            0<r<1 P is interior to AB
-		    */
+		/*
+		 * AC dot AB r = --------- ||AB||^2 r has the following meaning: r=0 P =
+		 * A r=1 P = B r<0 P is on the backward extension of AB r>1 P is on the
+		 * forward extension of AB 0<r<1 P is interior to AB
+		 */
 		double dx = p1.x - p0.x;
 		double dy = p1.y - p0.y;
 		double len2 = dx * dx + dy * dy;
@@ -516,7 +512,8 @@ public class LineSegment implements Comparable<Object> {
 	 */
 	public Coordinate lineIntersection(LineSegment line) {
 		try {
-			Coordinate intPt = HCoordinate.intersection(p0, p1, line.p0, line.p1);
+			Coordinate intPt = HCoordinate.intersection(p0, p1, line.p0,
+					line.p1);
 			return intPt;
 		} catch (NotRepresentableException ex) {
 			// eat this exception, and return null;
@@ -534,6 +531,7 @@ public class LineSegment implements Comparable<Object> {
 	 *         <code>LineSegment</code> with the same values for the x and y
 	 *         ordinates.
 	 */
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof LineSegment)) {
 			return false;
@@ -547,6 +545,7 @@ public class LineSegment implements Comparable<Object> {
 	 * 
 	 * @return a hashcode for this object
 	 */
+	@Override
 	public int hashCode() {
 		long bits0 = java.lang.Double.doubleToLongBits(p0.x);
 		bits0 ^= java.lang.Double.doubleToLongBits(p0.y) * 31;
@@ -571,6 +570,7 @@ public class LineSegment implements Comparable<Object> {
 	 *         <code>LineSegment</code> is less than, equal to, or greater than
 	 *         the specified <code>LineSegment</code>
 	 */
+	@Override
 	public int compareTo(Object o) {
 		LineSegment other = (LineSegment) o;
 		int comp0 = p0.compareTo(other.p0);

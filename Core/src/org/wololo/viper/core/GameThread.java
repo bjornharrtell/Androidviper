@@ -14,12 +14,14 @@ public class GameThread extends Thread {
 	public static final int STATE_DEMO = 6;
 	public static final int STATE_WIN = 5;
 
-	public static float heightFactor = 1.0f;
+	public float heightFactor = 1.0f;
 
 	protected List<Worm> worms = new ArrayList<Worm>();
 
 	protected int state = STATE_UNINITIALIZED;
 	long lastTime;
+
+	long secTimer;
 
 	protected void setState(int state) {
 		this.state = state;
@@ -30,6 +32,8 @@ public class GameThread extends Thread {
 
 		// make physics calc start in about 1000 ms
 		lastTime = System.currentTimeMillis() + 1000;
+
+		secTimer = System.currentTimeMillis();
 
 		setState(STATE_READY);
 	};
@@ -53,7 +57,7 @@ public class GameThread extends Thread {
 
 		if (lastTime > now)
 			return;
-		
+
 		long elapsed = now - lastTime;
 
 		for (Worm worm : worms) {
@@ -71,6 +75,12 @@ public class GameThread extends Thread {
 			}
 		}
 
+		if (System.currentTimeMillis() - secTimer > 1000) {
+			worms.get(0).score += worms.get(0).velocity * 50000;
+			onScore(worms.get(0).score, false);
+			secTimer = System.currentTimeMillis();
+		}
+
 		lastTime = now;
 	}
 
@@ -82,20 +92,22 @@ public class GameThread extends Thread {
 				worm.alive = false;
 				onDeath();
 			} else if (result == Worm.COLLISIONHOLE) {
-				onScore(++worm.score);
+				worm.score += 1000000 * worms.get(0).velocity;
+				if (worm == worms.get(0))
+					onScore(worm.score, true);
 			}
 		}
 	}
 
-	protected void onScore(int score) {
+	protected void onScore(int score, boolean sound) {
 
 	}
-	
+
 	protected void onDeath() {
-		
+
 	}
-	
+
 	protected void onBounce() {
-		
+
 	}
 }
