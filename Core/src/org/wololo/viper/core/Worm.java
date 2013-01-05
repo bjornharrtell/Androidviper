@@ -20,7 +20,7 @@ public class Worm {
 	boolean aiControlled = false;
 
 	public boolean alive = true;
-	int score = 0;
+	public int score = 0;
 
 	public double velocity = 0.00005f;
 	public double torque = 0.0f;

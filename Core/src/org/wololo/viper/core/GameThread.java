@@ -16,11 +16,11 @@ public class GameThread extends Thread {
 
 	public float heightFactor = 1.0f;
 
-	protected List<Worm> worms = new ArrayList<Worm>();
+	public List<Worm> worms = new ArrayList<Worm>();
 
-	protected int state = STATE_UNINITIALIZED;
+	public int state = STATE_UNINITIALIZED;
+	
 	long lastTime;
-
 	long secTimer;
 
 	protected void setState(int state) {
@@ -32,7 +32,6 @@ public class GameThread extends Thread {
 
 		// make physics calc start in about 1000 ms
 		lastTime = System.currentTimeMillis() + 1000;
-
 		secTimer = System.currentTimeMillis();
 
 		setState(STATE_READY);
@@ -50,6 +49,15 @@ public class GameThread extends Thread {
 		double direction = (Math.random() - 0.5) * 2.0 * Math.PI;
 
 		return direction;
+	}
+	
+	public void pause() {
+		setState(STATE_PAUSE);
+	}
+	
+	public void unpause() {
+		lastTime = System.currentTimeMillis();
+		setState(STATE_RUNNING);
 	}
 
 	protected void timestep() {

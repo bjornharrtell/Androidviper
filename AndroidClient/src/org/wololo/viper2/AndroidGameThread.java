@@ -7,6 +7,8 @@ import org.wololo.viper.core.GameThread;
 import org.wololo.viper.core.Worm;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -14,44 +16,59 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PowerManager;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
-public class AndroidGameThread extends GameThread implements SurfaceHolder.Callback, Handler.Callback {
+public class AndroidGameThread extends GameThread {
 
-	private SurfaceHolder surfaceHolder;
+	SurfaceHolder surfaceHolder;
+	
 	Handler handler;
-	Handler handlerGUI;
-
-	private final PowerManager.WakeLock wakeLock;
 
 	int canvasWidth;
 	int canvasHeight;
 	int canvasBoardOffsetX;
 	int canvasBoardOffsetY;
+	float pix;
 
 	Canvas boardCanvas;
 	Bitmap boardBitmap;
 
 	boolean running = false;
 
+	public static final String PREFS_NAME = "ViperIIPrefrences";
+	
+	int highscore;
+	
+	ViperSound sound;
+	
 	Context context;
 
-	public AndroidGameThread(Context context, Handler handlerGUI) {
-		this.handlerGUI = handlerGUI;
-		this.handler = new Handler(this);
+	public AndroidGameThread(Context context, Handler handler) {
+		Log.v(toString(), "Creating AndroidGameThread");
+		
+		this.handler = handler;
 		this.context = context;
-
-		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Viper");
+		
+		int dipValue = 1;
+	    Resources r = context.getResources();
+	    pix = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, r.getDisplayMetrics());
+		
+		sound = new ViperSound(context);
+		
+		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+		highscore = settings.getInt("highscore", 0);
 	}
 
-	public boolean handleMessage(Message m) {
-		Bundle data = m.getData();
-
-		int action = data.getInt("action");
-
+	public boolean handleMotion(int action, float x, float y) {
+		Log.v(toString(), "thread handling motion event");
+		
+		if (state == STATE_PAUSE) {
+			unpause();
+		}
+		
 		if (worms.size() > 0) {
 			Worm worm = worms.get(0);
 
@@ -62,8 +79,6 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 				worm.torque = 0;
 
 			} else if (action == MotionEvent.ACTION_DOWN) {
-				float x = data.getFloat("x");
-
 				if (x < (canvasWidth / 2)) {
 					worm.torque = -0.0015 - worm.velocity;
 				} else {
@@ -76,6 +91,8 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 	}
 
 	public void setSurfaceSize(int width, int height) {
+		Log.v(toString(), "setSurfaceSize called");
+		
 		canvasWidth = width;
 		canvasHeight = height;
 
@@ -83,6 +100,7 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 	}
 
 	public void initBitmap() {
+		Log.v(toString(), "initBitmap called");
 		heightFactor = (float) canvasHeight / canvasWidth;
 
 		boardBitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Config.ARGB_8888);
@@ -91,8 +109,7 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 	}
 
 	public void newGame() {
-
-		ViperActivity.playSound(ViperActivity.SOUND_LOAD);
+		sound.play(ViperSound.SOUND_LOAD);
 
 		List<Worm> worms = new ArrayList<Worm>();
 		worms.add(new AndroidWorm(this, getRandomStartCoordinate(), getRandomStartDirection(), Color.WHITE, false));
@@ -102,15 +119,19 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 
 		newGame(worms);
 	}
-
-	public void pause() {
-	}
-
+	
 	@Override
 	public void run() {
-		wakeLock.acquire();
-
+		running = true;
+		
 		while (running) {
+			while (state == STATE_PAUSE) {
+				try {
+					Thread.sleep(50L);
+				} catch (InterruptedException ignore) {
+				}
+			}
+			
 			Canvas canvas = null;
 			try {
 				canvas = surfaceHolder.lockCanvas(null);
@@ -132,54 +153,37 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 				}
 			}
 		}
-
-		wakeLock.release();
+	}
+	
+	void saveHighscore() {
+		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putInt("highscore", highscore);
+		editor.commit();
 	}
 
 	@Override
-	protected void onScore(int score, boolean sound) {
-		Message msg = handlerGUI.obtainMessage();
+	protected void onScore(int score, boolean makeSound) {
+		if (score>highscore) highscore = score;
+		
+		Message msg = handler.obtainMessage();
 		Bundle data = new Bundle();
 		data.putInt("score", score);
 		msg.setData(data);
-		handlerGUI.sendMessage(msg);
+		handler.sendMessage(msg);
 
-		if (sound)
-			ViperActivity.playSound(ViperActivity.SOUND_THREAD);
+		if (makeSound)
+			sound.play(ViperSound.SOUND_THREAD);
 	}
 
 	@Override
 	protected void onBounce() {
-		ViperActivity.playSound(ViperActivity.SOUND_BOUNCE);
+		sound.play(ViperSound.SOUND_BOUNCE);
 	}
 
 	@Override
 	protected void onDeath() {
-		int nr = (int) (Math.random() * 5);
-		int id = ViperActivity.SOUND_DOH1;
-
-		switch (nr) {
-		case 0:
-			id = ViperActivity.SOUND_DOH1;
-			break;
-		case 1:
-			id = ViperActivity.SOUND_DOH2;
-			break;
-		case 2:
-			id = ViperActivity.SOUND_DOH3;
-			break;
-		case 3:
-			id = ViperActivity.SOUND_DOH4;
-			break;
-		case 4:
-			id = ViperActivity.SOUND_DOH5;
-			break;
-		case 5:
-			id = ViperActivity.SOUND_DOH6;
-			break;
-		}
-
-		ViperActivity.playSound(id);
+		sound.play(sound.randomDoh());
 	}
 
 	void timestep(Canvas canvas) {
@@ -199,46 +203,23 @@ public class AndroidGameThread extends GameThread implements SurfaceHolder.Callb
 	public void setState(int state) {
 		super.setState(state);
 
-		Message msg = handlerGUI.obtainMessage();
+		Log.i(toString(), "Game state set to " + state);
+		
+		Message msg = handler.obtainMessage();
 		Bundle data = new Bundle();
 		data.putInt("state", state);
 		msg.setData(data);
-		handlerGUI.sendMessage(msg);
+		handler.sendMessage(msg);
 
 		if (state == STATE_RUNNING) {
-			// MediaPlayer mediaPlayer = MediaPlayer.create(context,
-			// R.raw.wohoo);
-			// mediaPlayer.start();
 		} else if (state == STATE_LOSE) {
-			ViperActivity.playSound(ViperActivity.SOUND_GAMEOVER);
+			sound.play(ViperSound.SOUND_GAMEOVER);
+			saveHighscore();
 		} else if (state == STATE_WIN) {
-			ViperActivity.playSound(ViperActivity.SOUND_GAMEOVER);
+			sound.play(ViperSound.SOUND_GAMEOVER);
+			saveHighscore();
 		}
 	}
 
-	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-		this.setSurfaceSize(width, height);
-	}
-
-	public void surfaceCreated(SurfaceHolder holder) {
-		// start the thread here so that we don't busy-wait in run()
-		// waiting for the surface to be created
-		this.surfaceHolder = holder;
-		running = true;
-		this.start();
-	}
-
-	public void surfaceDestroyed(SurfaceHolder holder) {
-		// we have to tell thread to shut down & wait for it to finish, or else
-		// it might touch the Surface after we return and explode
-		boolean retry = true;
-		running = false;
-		while (retry) {
-			try {
-				this.join();
-				retry = false;
-			} catch (InterruptedException e) {
-			}
-		}
-	}
+	
 }

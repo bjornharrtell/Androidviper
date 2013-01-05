@@ -1,53 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="fill_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
 
-	<RelativeLayout android:id="@+id/RelativeLayoutSurfaceView"
-		android:layout_width="fill_parent" android:layout_height="fill_parent">
-		<LinearLayout android:id="@+id/linearLayout1" android:layout_height="fill_parent" android:layout_width="fill_parent" android:orientation="vertical">
-			<SurfaceView android:layout_width="fill_parent" android:id="@+id/SurfaceView" android:layout_height="fill_parent" android:layout_weight="1"></SurfaceView>
-		</LinearLayout>
-		<TextView android:text="Score: 0" android:paddingRight="10sp" android:textColor="#ffffff" android:textSize="12sp" android:gravity="center_horizontal" android:id="@+id/TextViewScore" android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_alignParentRight="true"></TextView>
-	</RelativeLayout>
+    <com.google.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="320dip" 
+        android:layout_height="50dip"
+        ads:adSize="BANNER"
+        ads:adUnitId="a14e8b0451c8c7f"
+        ads:loadAdOnCreate="false" />
 
-	<RelativeLayout android:id="@+id/RelativeLayoutMainMenu"
-		android:layout_width="fill_parent" android:layout_height="fill_parent">
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
-			android:layout_width="fill_parent" android:layout_height="fill_parent"
-			android:orientation="vertical">
-			<com.google.ads.AdView android:id="@+id/adView"
-                         android:layout_width="wrap_content"
-                         android:layout_height="wrap_content"
-                         ads:adUnitId="a14e8b0451c8c7f"
-                         ads:adSize="BANNER"
-                         ads:loadAdOnCreate="false"/>
-			<TextView android:typeface="normal" android:textStyle="bold"
-				android:layout_height="wrap_content" android:gravity="center_horizontal"
-				android:textColor="#ffffff" android:layout_width="fill_parent"
-				android:id="@+id/TextViewTitle" android:paddingTop="120dp"
-				android:textSize="16sp"
-				android:paddingBottom="10dp" android:text="Viper II 1.12.2 (c) Björn Harrtell"></TextView>
-			<TextView android:typeface="normal" android:textStyle="bold"
-				android:layout_height="wrap_content" android:gravity="center_horizontal"
-				android:textColor="#ffffff" android:layout_width="fill_parent"
-				android:id="@+id/TextViewHighscore" android:textSize="14sp"
-				android:paddingBottom="10dp" android:text="Highscore: "></TextView>
-			<Button android:text="New Game" android:id="@+id/ButtonNewGame"
-				android:layout_height="wrap_content" android:layout_width="wrap_content"
-				android:layout_gravity="center" android:width="200dp"></Button>
-			<Button android:text="Quit" android:id="@+id/ButtonQuit"
-				android:layout_height="wrap_content" android:layout_width="wrap_content"
-				android:layout_gravity="center" android:width="200dp"></Button>
-			<TextView android:typeface="normal" android:textStyle="normal"
-				android:layout_height="wrap_content" android:gravity="center_horizontal"
-				android:textColor="#ffffff" android:layout_width="fill_parent"
-				android:id="@+id/TextViewTitle" android:paddingTop="10dp"
-				android:text="Control the direction of the white worm by touching the display on right/left side. Note that the worm angle is controlled with the current direction as the frame of reference. Win points by going though holes."
-				android:textSize="12sp" android:paddingBottom="10dp"
-				android:paddingLeft="10dp" android:paddingRight="10dp">
-			</TextView>
-		</LinearLayout>
-	</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
 
-</FrameLayout>
+        <RelativeLayout
+            android:id="@+id/Game"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
+
+            <org.wololo.viper2.ViperView
+                android:id="@+id/ViperView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+
+            <TextView
+                android:id="@+id/TextViewScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:gravity="center_horizontal"
+                android:paddingRight="10sp"
+                android:text="Score: 0"
+                android:textColor="#ffffff"
+                android:textSize="12sp" >
+            </TextView>
+        </RelativeLayout>
+
+        <LinearLayout
+            xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/Menu"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/TextViewTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingBottom="10dp"
+                android:paddingTop="120dp"
+                android:text="Viper II"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:typeface="normal" />
+
+            <TextView
+                android:id="@+id/TextViewHighscore"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingBottom="10dp"
+                android:text="Highscore: "
+                android:textColor="#ffffff"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:typeface="normal" />
+
+            <Button
+                android:id="@+id/ButtonNewGame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="New Game"
+                android:width="200dp" />
+
+            <Button
+                android:id="@+id/ButtonQuit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Quit"
+                android:width="200dp" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:text="Control the direction of the white worm by touching the display on right/left side. Note that the worm angle is controlled with the current direction as the frame of reference. Win points by going though holes."
+                android:textColor="#ffffff"
+                android:textSize="12sp"
+                android:textStyle="normal"
+                android:typeface="normal" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

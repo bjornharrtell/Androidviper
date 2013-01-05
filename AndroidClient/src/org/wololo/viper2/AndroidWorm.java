@@ -20,7 +20,7 @@ public class AndroidWorm extends Worm {
 		paint = new Paint();
 		paint.setColor(color);
 		paint.setAntiAlias(true);
-		paint.setStrokeWidth(2);
+		paint.setStrokeWidth(gameThread.pix*2);
 
 		holePaint = new Paint(paint);
 		holePaint.setAlpha(75);
@@ -46,6 +46,6 @@ public class AndroidWorm extends Worm {
 		float stopX = (float) (wormSegment.p1.x) * (width - 1);
 		float stopY = (float) (wormSegment.p1.y / gameThread.heightFactor) * (height - 1);
 
-		canvas.drawLine(startX, startY, stopX, stopY, wormSegment.isHole() ? holePaint : this.paint);
+		canvas.drawLine(startX, startY, stopX, stopY, wormSegment.isHole() ? holePaint : paint);
 	}
 }
