@@ -122,7 +122,6 @@ public class ViperActivity extends Activity implements OnClickListener {
 		super.onDestroy();
 		Log.v(toString(), "onDestroy called");
 		viperView.thread.sound.soundPool.release();
-		adView.destroy();
 	}
 
 	void handleStateChange(int state) {
