@@ -16,8 +16,8 @@ import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 public class ViperActivity extends Activity implements OnClickListener {
 	AdView adView;
@@ -61,10 +61,10 @@ public class ViperActivity extends Activity implements OnClickListener {
 		setContentView(R.layout.viper);
 
 		adView = (AdView) this.findViewById(R.id.adView);
-		AdRequest adRequest = new AdRequest();
-		adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
-		adRequest.addTestDevice("43423531314B4A554155");
-		adView.loadAd(adRequest);
+		AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+		adRequestBuilder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+		adRequestBuilder.addTestDevice("788E31F82926400BC2D98E7633646348");
+		adView.loadAd(adRequestBuilder.build());
 
 		menu = findViewById(R.id.Menu);
 		game = findViewById(R.id.Game);

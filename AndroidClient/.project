@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Viper</name>
+	<name>viper-android</name>
 	<comment></comment>
 	<projects>
-		<project>Core</project>
+		<project>google-play-services_lib</project>
+		<project>viper-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
